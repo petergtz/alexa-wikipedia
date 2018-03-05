@@ -1,0 +1,35 @@
+hash: 1cb7b06949cc71471952de8142ab9f159bfb65e12df6b1974760c87b31c54344
+updated: 2018-02-27T15:26:01.363452598+01:00
+imports:
+- name: github.com/ericdaugherty/alexa-skills-kit-golang
+  version: 5669a59bb223f3afeace7a8f8d1cf4ec938daba1
+- name: github.com/jaytaylor/html2text
+  version: 190166da35878a77103b951ae035a473531c1fc2
+- name: github.com/k3a/html2text
+  version: ab70b34187c4604d303fa56569efef07cb7753e6
+- name: github.com/mattn/go-runewidth
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
+- name: github.com/olekukonko/tablewriter
+  version: b8a9be070da40449e501c3c4730a889e42d87a9e
+- name: github.com/pkg/math
+  version: f2ed9e40e245cdeec72c4b642d27ed4553f90667
+- name: github.com/ssor/bom
+  version: 6386211fdfcf24c0bfbdaceafd02849ed9a8a509
+- name: go.uber.org/atomic
+  version: 8474b86a5a6f79c443ce4b2992817ff32cf208b8
+- name: go.uber.org/multierr
+  version: 3c4937480c32f4c13a875a1829af76c98ca3d40a
+- name: go.uber.org/zap
+  version: e15639dab1b6ca5a651fe7ebfd8d682683b7d6a8
+  subpackages:
+  - buffer
+  - internal/bufferpool
+  - internal/color
+  - internal/exit
+  - zapcore
+- name: golang.org/x/net
+  version: 1f9224279e98554b6a6432d4dd998a739f8b2b7c
+  subpackages:
+  - html
+  - html/atom
+testImports: []

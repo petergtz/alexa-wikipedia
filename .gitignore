@@ -1,0 +1,5 @@
+*Request.json
+tmp
+vendor
+*.pem
+run-tests.sh

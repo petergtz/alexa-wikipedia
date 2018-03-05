@@ -1,0 +1,6 @@
+package: github.com/petergtz/alexa-wikipedia
+import:
+- package: github.com/k3a/html2text
+- package: github.com/jaytaylor/html2text
+- package: github.com/pkg/math
+- package: github.com/ericdaugherty/alexa-skills-kit-golang
