@@ -28,7 +28,11 @@ func main() {
 	log = l.Sugar()
 
 	http.HandleFunc("/", handler)
-	e = http.ListenAndServeTLS("0.0.0.0:"+os.Getenv("PORT"), "certificate.pem", "private-key.pem", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4443"
+	}
+	e = http.ListenAndServeTLS("0.0.0.0:"+port, "certificate.pem", "private-key.pem", nil)
 	// e = http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil)
 	log.Fatal(e)
 }
