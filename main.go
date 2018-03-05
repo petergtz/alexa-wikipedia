@@ -29,11 +29,11 @@ func main() {
 
 	http.HandleFunc("/", handler)
 	port := os.Getenv("PORT")
-	if port == "" {
-		port = "4443"
+	if port == "" { // the port variable lets us distinguish between a local server an done in CF
+		e = http.ListenAndServeTLS("0.0.0.0:4443", "private/certificate.pem", "private/private-key.pem", nil)
+	} else {
+		e = http.ListenAndServe("0.0.0.0:"+port, nil)
 	}
-	e = http.ListenAndServeTLS("0.0.0.0:"+port, "private/certificate.pem", "private/private-key.pem", nil)
-	// e = http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil)
 	log.Fatal(e)
 }
 
