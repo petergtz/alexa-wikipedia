@@ -5,3 +5,7 @@ import:
 - package: github.com/pkg/math
 - package: github.com/ericdaugherty/alexa-skills-kit-golang
 - package: github.com/pkg/errors
+- package: github.com/onsi/ginkgo
+  subpackages:
+  - ginkgo
+- package: github.com/onsi/gomega

@@ -1,5 +1,5 @@
-hash: 950aea36e18ffbf015bd312065593a273d14044531664c4de2d783c677d4c6ea
-updated: 2018-03-05T15:41:24.992149121+01:00
+hash: 1fd530c69963a24ef5f3951e373d3fe17c795bcfe73b5b23dba5c3f35f03947a
+updated: 2018-03-05T16:02:16.25107326+01:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
   version: 5669a59bb223f3afeace7a8f8d1cf4ec938daba1
@@ -11,6 +11,12 @@ imports:
   version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/olekukonko/tablewriter
   version: b8a9be070da40449e501c3c4730a889e42d87a9e
+- name: github.com/onsi/ginkgo
+  version: a23f924ce96d61f963fb6219b8ff069d8d768cc2
+  subpackages:
+  - ginkgo
+- name: github.com/onsi/gomega
+  version: e85f63af4302dc0e4277c6008ecf803f1d80e4f0
 - name: github.com/pkg/errors
   version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: github.com/pkg/math

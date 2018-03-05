@@ -15,6 +15,31 @@ import (
 type MediaWiki struct {
 }
 
+type ExtractQuery struct {
+	Query struct {
+		Pages []struct {
+			Extract string
+		}
+	}
+}
+type RevisionsQuery struct {
+	Query struct {
+		Pages []struct {
+			Revisions []struct {
+				Content string
+			}
+		}
+	}
+}
+
+type ParseQuery struct {
+	Parse struct {
+		Text struct {
+			Body string `json:"*"`
+		}
+	}
+}
+
 func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
 	r, e := http.Get("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=" + word + "&redirects=true&formatversion=2")
 	// r, e := http.Get("https://de.wikipedia.org/w/api.php?action=query&titles=" + intent.Slots["word"].Value + "&prop=revisions&rvprop=content&format=json&formatversion=2")
@@ -27,29 +52,7 @@ func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
 		return wiki.Page{}, errors.Wrap(e, "Could not read body of wikipedia page")
 	}
 	// log.Infof("%s", content)
-	t := struct {
-		Query struct {
-			Pages []struct {
-				Extract string
-			}
-		}
-	}{}
-	// t := struct {
-	// 	Query struct {
-	// 		Pages []struct {
-	// 			Revisions []struct {
-	// 				Content string
-	// 			}
-	// 		}
-	// 	}
-	// }{}
-	// t := struct {
-	// 	Parse struct {
-	// 		Text struct {
-	// 			Body string `json:"*"`
-	// 		}
-	// 	}
-	// }{}
+	t := ExtractQuery{}
 	e = json.Unmarshal(content, &t)
 	if e != nil {
 		return wiki.Page{}, errors.Wrap(e, "Could not unmarshal body of wikipedia page")
