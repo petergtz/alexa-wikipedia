@@ -32,7 +32,7 @@ func main() {
 	if port == "" {
 		port = "4443"
 	}
-	e = http.ListenAndServeTLS("0.0.0.0:"+port, "certificate.pem", "private-key.pem", nil)
+	e = http.ListenAndServeTLS("0.0.0.0:"+port, "private/certificate.pem", "private/private-key.pem", nil)
 	// e = http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil)
 	log.Fatal(e)
 }
