@@ -4,3 +4,4 @@ import:
 - package: github.com/jaytaylor/html2text
 - package: github.com/pkg/math
 - package: github.com/ericdaugherty/alexa-skills-kit-golang
+- package: github.com/pkg/errors

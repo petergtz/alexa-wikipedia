@@ -6,11 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 
 	"go.uber.org/zap"
 
-	"github.com/jaytaylor/html2text"
+	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/pkg/math"
 )
 
@@ -81,67 +80,15 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 		switch intent.Name {
 		case "define":
 			log.Infof("Slot word: %v", intent.Slots["word"].Value)
-			r, e := http.Get("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=" + intent.Slots["word"].Value + "&redirects=true&formatversion=2")
-			// r, e := http.Get("https://de.wikipedia.org/w/api.php?action=query&titles=" + intent.Slots["word"].Value + "&prop=revisions&rvprop=content&format=json&formatversion=2")
-			// r, e := http.Get("https://de.wikipedia.org/w/api.php?action=parse&page=" + intent.Slots["word"].Value + "&contentmodel=wikitext&section=0&prop=text|sections&format=json")
-			if e != nil {
-				log.Errorw("Could not request Wikipedia page", "error", e)
-				return internalError()
-			}
-			content, e := ioutil.ReadAll(r.Body)
-			if e != nil {
-				log.Errorw("Could not read body of wikipedia page", "error", e)
-				return internalError()
-			}
-			log.Infof("%s", content)
-			t := struct {
-				Query struct {
-					Pages []struct {
-						Extract string
-					}
-				}
-			}{}
-			// t := struct {
-			// 	Query struct {
-			// 		Pages []struct {
-			// 			Revisions []struct {
-			// 				Content string
-			// 			}
-			// 		}
-			// 	}
-			// }{}
-			// t := struct {
-			// 	Parse struct {
-			// 		Text struct {
-			// 			Body string `json:"*"`
-			// 		}
-			// 	}
-			// }{}
-			e = json.Unmarshal(content, &t)
-			if e != nil {
-				log.Errorw("Could not unmarshal body of wikipedia page", "error", e)
-				return internalError()
-			}
-			// log.Info(t.Parse.Text.Body)
-			// log.Info(t.Query.Pages[0].Revisions[0].Content)
-			// article, e := gowiki.ParseArticle("Bla", t.Query.Pages[0].Revisions[0].Content, &gowiki.DummyPageGetter{})
-			// log.Debugf("%#v", article.GetText())
-			// gowiki.ParseArticle(title string, text string, g gowiki.PageGetter)
 
-			// article := strings.Replace(html2text.HTML2Text(t.Query.Pages[0].Extract), "\r\n", "\n", -1)
-			// html2text.FromString(input string, options ...html2text.Options)
-
-			text, e := html2text.FromString(t.Query.Pages[0].Extract, html2text.Options{OmitLinks: true})
-			// text, e := html2text.FromString(t.Parse.Text.Body, html2text.Options{OmitLinks: true})
+			page, e := (&mediawiki.MediaWiki{}).GetPage(intent.Slots["word"].Value)
 			if e != nil {
-				panic(e)
+				log.Errorw("Could not get Wikipedia page", "error", e)
+				return internalError()
 			}
-			article := strings.Replace(text, "\r\n", "\n", -1)
-			// article.PrintParseTree()
-			// article.Root.
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
-					OutputSpeech: plainText(article[:math.MinInt(4000, len(article))] + ". Soll ich noch weiterlesen?"),
+					OutputSpeech: plainText(page.Sections[0].Body[:math.MinInt(4000, len(page.Sections[0].Body))] + ". Soll ich noch weiterlesen?"),
 					// OutputSpeech:     plainText(article.GetAbstract() + " Soll ich noch weiterlesen?"),
 					Reprompt:         &Reprompt{OutputSpeech: plainText("Soll ich noch weiterlesen?")},
 					ShouldSessionEnd: false,
