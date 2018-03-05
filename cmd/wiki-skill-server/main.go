@@ -30,7 +30,9 @@ func main() {
 	http.HandleFunc("/", handler)
 	port := os.Getenv("PORT")
 	if port == "" { // the port variable lets us distinguish between a local server an done in CF
-		e = http.ListenAndServeTLS("0.0.0.0:4443", "private/certificate.pem", "private/private-key.pem", nil)
+		log.Debugf("Certificate path: %v", os.Getenv("cert"))
+		log.Debugf("Private key path: %v", os.Getenv("key"))
+		e = http.ListenAndServeTLS("0.0.0.0:4443", os.Getenv("cert"), os.Getenv("key"), nil)
 	} else {
 		e = http.ListenAndServe("0.0.0.0:"+port, nil)
 	}
