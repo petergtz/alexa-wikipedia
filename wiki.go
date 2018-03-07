@@ -1,12 +1,11 @@
 package wiki
 
-type Page struct {
-	Sections []Section
-}
+type Page Section
 
 type Section struct {
-	Title string
-	Body  string
+	Title       string
+	Body        string
+	Subsections []Section
 }
 
 type Wiki interface {

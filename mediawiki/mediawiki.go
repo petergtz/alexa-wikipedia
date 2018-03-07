@@ -2,26 +2,31 @@ package mediawiki
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
 
-	"github.com/jaytaylor/html2text"
 	wiki "github.com/petergtz/alexa-wikipedia"
 )
 
 type MediaWiki struct {
 }
 
+type Page struct {
+	Title   string
+	Extract string
+}
+
 type ExtractQuery struct {
 	Query struct {
-		Pages []struct {
-			Extract string
-		}
+		Pages []Page
 	}
 }
+
 type RevisionsQuery struct {
 	Query struct {
 		Pages []struct {
@@ -41,38 +46,49 @@ type ParseQuery struct {
 }
 
 func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
-	r, e := http.Get("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=" + word + "&redirects=true&formatversion=2")
-	// r, e := http.Get("https://de.wikipedia.org/w/api.php?action=query&titles=" + intent.Slots["word"].Value + "&prop=revisions&rvprop=content&format=json&formatversion=2")
-	// r, e := http.Get("https://de.wikipedia.org/w/api.php?action=parse&page=" + intent.Slots["word"].Value + "&contentmodel=wikitext&section=0&prop=text|sections&format=json")
+	extract := ExtractQuery{}
+	e := makeJsonRequest("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles="+word+"&redirects=true&formatversion=2&explaintext=true", &extract)
 	if e != nil {
-		return wiki.Page{}, errors.Wrap(e, "Could not request Wikipedia page")
+		return wiki.Page{}, e
+	}
+	return WikiPageFrom(extract.Query.Pages[0]), nil
+}
+
+func makeJsonRequest(url string, data interface{}) error {
+	r, e := http.Get(url)
+	if e != nil {
+		return errors.Wrap(e, "Could not request url")
 	}
 	content, e := ioutil.ReadAll(r.Body)
 	if e != nil {
-		return wiki.Page{}, errors.Wrap(e, "Could not read body of wikipedia page")
+		return errors.Wrap(e, "Could not read body of page")
 	}
-	// log.Infof("%s", content)
-	t := ExtractQuery{}
-	e = json.Unmarshal(content, &t)
+	e = json.Unmarshal(content, data)
 	if e != nil {
-		return wiki.Page{}, errors.Wrap(e, "Could not unmarshal body of wikipedia page")
+		return errors.Wrap(e, "Could not unmarshal body of page")
 	}
-	// log.Info(t.Parse.Text.Body)
-	// log.Info(t.Query.Pages[0].Revisions[0].Content)
-	// article, e := gowiki.ParseArticle("Bla", t.Query.Pages[0].Revisions[0].Content, &gowiki.DummyPageGetter{})
-	// log.Debugf("%#v", article.GetText())
-	// gowiki.ParseArticle(title string, text string, g gowiki.PageGetter)
+	return nil
+}
 
-	// article := strings.Replace(html2text.HTML2Text(t.Query.Pages[0].Extract), "\r\n", "\n", -1)
-	// html2text.FromString(input string, options ...html2text.Options)
-
-	text, e := html2text.FromString(t.Query.Pages[0].Extract, html2text.Options{OmitLinks: true})
-	// text, e := html2text.FromString(t.Parse.Text.Body, html2text.Options{OmitLinks: true})
-	if e != nil {
-		panic(e)
+func WikiPageFrom(mediawikipage Page) wiki.Page {
+	page := wiki.Page{
+		Title: mediawikipage.Title,
+		// It's not obvious, but suffixing a \n to the text helps with regexes below
+		Body: mediawikipage.Extract + "\n",
 	}
-	article := strings.Replace(text, "\r\n", "\n", -1)
-	return wiki.Page{
-		Sections: []wiki.Section{wiki.Section{Body: article}},
-	}, nil
+	parse((*wiki.Section)(&page), 2)
+	return page
+}
+
+func parse(section *wiki.Section, level int) {
+	var sectionTitleRegex = regexp.MustCompile(fmt.Sprintf("\n={%v} (.*) ={%v}\n", level, level))
+	sectionTitles := sectionTitleRegex.FindAllStringSubmatch(section.Body, -1)
+	sections := sectionTitleRegex.Split(section.Body, -1)
+	section.Body = strings.Trim(sections[0], "\n")
+	section.Subsections = make([]wiki.Section, len(sections)-1)
+	for i, s := range sections[1:] {
+		section.Subsections[i].Title = strings.TrimSuffix(strings.TrimPrefix(strings.Trim(sectionTitles[i][1], "\n"), "== "), " ==")
+		section.Subsections[i].Body = s
+		parse(&section.Subsections[i], level+1)
+	}
 }

@@ -1,5 +1,5 @@
 hash: 1fd530c69963a24ef5f3951e373d3fe17c795bcfe73b5b23dba5c3f35f03947a
-updated: 2018-03-05T16:02:16.25107326+01:00
+updated: 2018-03-06T22:01:37.423837+01:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
   version: 5669a59bb223f3afeace7a8f8d1cf4ec938daba1
@@ -14,9 +14,37 @@ imports:
 - name: github.com/onsi/ginkgo
   version: a23f924ce96d61f963fb6219b8ff069d8d768cc2
   subpackages:
+  - config
   - ginkgo
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
+  - types
 - name: github.com/onsi/gomega
-  version: e85f63af4302dc0e4277c6008ecf803f1d80e4f0
+  version: de89e61d40b75aa971a9fc3eae7f4fefabd6e0ee
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
 - name: github.com/pkg/errors
   version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: github.com/pkg/math
@@ -40,4 +68,10 @@ imports:
   subpackages:
   - html
   - html/atom
-testImports: []
+testImports:
+- name: golang.org/x/sys
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
