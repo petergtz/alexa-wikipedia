@@ -10,7 +10,7 @@ import (
 )
 
 var _ = Describe("Mediawiki", func() {
-	Describe("action=query prop=extract", func() {
+	Describe("WikiPageFrom", func() {
 		It("works", func() {
 			text, e := ioutil.ReadFile("testdata/extract-baum.wiki.txt")
 			Expect(e).NotTo(HaveOccurred())

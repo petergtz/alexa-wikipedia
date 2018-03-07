@@ -6,11 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"go.uber.org/zap"
 
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
-	"github.com/pkg/math"
 )
 
 var (
@@ -65,6 +66,8 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 		return internalError()
 	}
 
+	wiki := &mediawiki.MediaWiki{}
+
 	switch requestEnv.Request.Type {
 
 	case "LaunchRequest":
@@ -81,21 +84,89 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 		case "define":
 			log.Infof("Slot word: %v", intent.Slots["word"].Value)
 
-			page, e := (&mediawiki.MediaWiki{}).GetPage(intent.Slots["word"].Value)
+			page, e := wiki.GetPage(intent.Slots["word"].Value)
 			if e != nil {
 				log.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
 			}
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
-					OutputSpeech: plainText(page.Sections[0].Body[:math.MinInt(4000, len(page.Sections[0].Body))] + ". Soll ich noch weiterlesen?"),
-					// OutputSpeech:     plainText(article.GetAbstract() + " Soll ich noch weiterlesen?"),
-					Reprompt:         &Reprompt{OutputSpeech: plainText("Soll ich noch weiterlesen?")},
+					OutputSpeech:     plainText(page.Body + " Soll ich einfach weiterlesen oder soll ich zunächst das Inhaltsverzeichnis vorlesen?"),
 					ShouldSessionEnd: false,
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":     intent.Slots["word"].Value,
-					"position": 10,
+					"position": 0,
+				},
+			}
+		case "AMAZON.ResumeIntent":
+			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
+			if e != nil {
+				log.Errorw("Could not get Wikipedia page", "error", e)
+				return internalError()
+			}
+			position := int(requestEnv.Session.Attributes["position"].(float64))
+			s := page.TextForPosition(position)
+			return &ResponseEnvelope{Version: "1.0",
+				Response: &Response{
+					OutputSpeech:     plainText(s),
+					ShouldSessionEnd: false,
+				},
+				SessionAttributes: map[string]interface{}{
+					"word":     requestEnv.Session.Attributes["word"],
+					"position": position + 1,
+				},
+			}
+		case "toc":
+			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
+			if e != nil {
+				log.Errorw("Could not get Wikipedia page", "error", e)
+				return internalError()
+			}
+			s := ""
+			for i, section := range page.Subsections {
+				s += fmt.Sprintf("Abschnitt %v: %v.\n", i+1, section.Title)
+			}
+			return &ResponseEnvelope{Version: "1.0",
+				Response: &Response{
+					OutputSpeech:     plainText(s),
+					ShouldSessionEnd: false,
+				},
+				SessionAttributes: requestEnv.Session.Attributes,
+			}
+		case "goto_section":
+			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
+			if e != nil {
+				log.Errorw("Could not get Wikipedia page", "error", e)
+				return internalError()
+			}
+			sectionTitleOrNumber := intent.Slots["section_title_or_number"].Value
+			s := ""
+			sectionNumber, e := strconv.Atoi(sectionTitleOrNumber)
+			if e == nil {
+				s = page.Subsections[sectionNumber].Body
+				if s == "" && len(page.Subsections[sectionNumber].Subsections) > 0 {
+					s = page.Subsections[sectionNumber].Subsections[0].Body
+				}
+			} else {
+				for _, section := range page.Subsections {
+					if strings.ToLower(section.Title) == strings.ToLower(sectionTitleOrNumber) {
+						s = section.Body
+						break
+					}
+				}
+			}
+			if s == "" {
+				s = "Ich konnte den angegebenen Abschnitt \"" + sectionTitleOrNumber + "\" nicht finden."
+			}
+			return &ResponseEnvelope{Version: "1.0",
+				Response: &Response{
+					OutputSpeech:     plainText(s),
+					ShouldSessionEnd: false,
+				},
+				SessionAttributes: map[string]interface{}{
+					"word":     requestEnv.Session.Attributes["word"],
+					"position": sectionNumber,
 				},
 			}
 		case "AMAZON.HelpIntent":
@@ -264,7 +335,7 @@ func internalError() *ResponseEnvelope {
 	return &ResponseEnvelope{Version: "1.0",
 		Response: &Response{
 			OutputSpeech:     plainText("Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia."),
-			ShouldSessionEnd: true,
+			ShouldSessionEnd: false,
 		},
 	}
 }
