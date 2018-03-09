@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -19,6 +20,7 @@ type MediaWiki struct {
 type Page struct {
 	Title   string
 	Extract string
+	Missing bool
 }
 
 type ExtractQuery struct {
@@ -47,9 +49,12 @@ type ParseQuery struct {
 
 func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
 	extract := ExtractQuery{}
-	e := makeJsonRequest("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles="+word+"&redirects=true&formatversion=2&explaintext=true", &extract)
+	e := makeJsonRequest("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true", &extract)
 	if e != nil {
 		return wiki.Page{}, e
+	}
+	if extract.Query.Pages[0].Missing {
+		return wiki.Page{}, errors.New("Page not found on Wikipedia")
 	}
 	return WikiPageFrom(extract.Query.Pages[0]), nil
 }
@@ -57,7 +62,7 @@ func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
 func makeJsonRequest(url string, data interface{}) error {
 	r, e := http.Get(url)
 	if e != nil {
-		return errors.Wrap(e, "Could not request url")
+		return errors.Wrapf(e, "Could not request url: \"%v\"", url)
 	}
 	content, e := ioutil.ReadAll(r.Body)
 	if e != nil {
@@ -65,7 +70,7 @@ func makeJsonRequest(url string, data interface{}) error {
 	}
 	e = json.Unmarshal(content, data)
 	if e != nil {
-		return errors.Wrap(e, "Could not unmarshal body of page")
+		return errors.Wrapf(e, "Could not unmarshal body of page. body was: \"%v\"", content)
 	}
 	return nil
 }

@@ -10,6 +10,24 @@ import (
 )
 
 var _ = Describe("Mediawiki", func() {
+	It("returns the page when it finds it", func() {
+		page, e := (&mediawiki.MediaWiki{}).GetPage("Baum")
+		Expect(e).NotTo(HaveOccurred())
+		Expect(page.Title).To(Equal("Baum"))
+	})
+
+	It("returns an error when it cannot find the page", func() {
+		_, e := (&mediawiki.MediaWiki{}).GetPage("NotExistingWikiPage")
+		Expect(e).To(HaveOccurred())
+		Expect(e.Error()).To(Equal("Page not found on Wikipedia"))
+	})
+
+	It("properly escapes wearch words", func() {
+		page, e := (&mediawiki.MediaWiki{}).GetPage("Albert Einstein")
+		Expect(e).NotTo(HaveOccurred())
+		Expect(page.Title).To(Equal("Albert Einstein"))
+	})
+
 	Describe("WikiPageFrom", func() {
 		It("works", func() {
 			text, e := ioutil.ReadFile("testdata/extract-baum.wiki.txt")
