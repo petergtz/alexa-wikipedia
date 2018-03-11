@@ -8,6 +8,7 @@ import (
 type Page Section
 
 type Section struct {
+	Number      string
 	Title       string
 	Body        string
 	Subsections []Section
@@ -49,16 +50,17 @@ func (p Page) TextAndPositionFromSectionNumber(sectionNumber string) (text strin
 	return traverse2(Section(p), 0, 1, 0, sectionNumber, "")
 }
 
-func convert(i int) string {
+func Convert(i int) string {
 	return numbers[i]
 }
 
 func textFor(section Section) string {
-	s := section.Body
-	if s == "" && len(section.Subsections) > 0 {
-		s = section.Subsections[0].Title + ". " + section.Subsections[0].Body
+	s := "Abschnitt " + section.Number + ". " + section.Title + ". " + section.Body
+	for section.Body == "" && len(section.Subsections) > 0 {
+		s += "Abschnitt " + section.Subsections[0].Number + ". " + section.Subsections[0].Title + ". " + section.Subsections[0].Body
+		section = section.Subsections[0]
 	}
-	return section.Title + ". " + s
+	return s
 }
 
 func traverse2(s Section, level int, index int, cur int, sectionNumber string, prefix string) (text string, new_cur int) {
@@ -67,9 +69,9 @@ func traverse2(s Section, level int, index int, cur int, sectionNumber string, p
 	case 0:
 		currentSectionNumber = ""
 	case 1:
-		currentSectionNumber = convert(index)
+		currentSectionNumber = Convert(index)
 	default:
-		currentSectionNumber = prefix + " punkt " + convert(index)
+		currentSectionNumber = prefix + " punkt " + Convert(index)
 	}
 
 	if sectionNumber == currentSectionNumber {

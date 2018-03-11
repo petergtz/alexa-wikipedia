@@ -131,7 +131,47 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 					"last_question": "should_continue",
 				},
 			}
-		case "AMAZON.NextIntent", "AMAZON.YesIntent", "AMAZON.ResumeIntent":
+		case "AMAZON.YesIntent", "AMAZON.ResumeIntent":
+			if lastQuestionIn(requestEnv.Session) != "should_continue" {
+				return &ResponseEnvelope{Version: "1.0",
+					Response:          &Response{OutputSpeech: plainText("Wie meinen?")},
+					SessionAttributes: requestEnv.Session.Attributes,
+				}
+			}
+			page, resp := h.pageFromSession(requestEnv.Session)
+			if resp != nil {
+				return resp
+			}
+			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
+			return &ResponseEnvelope{Version: "1.0",
+				Response: &Response{
+					OutputSpeech: plainText(page.TextForPosition(newPosition) +
+						" Soll ich noch weiterlesen?"),
+				},
+				SessionAttributes: map[string]interface{}{
+					"word":          requestEnv.Session.Attributes["word"],
+					"position":      newPosition,
+					"last_question": "should_continue",
+				},
+			}
+		case "AMAZON.RepeatIntent":
+			page, resp := h.pageFromSession(requestEnv.Session)
+			if resp != nil {
+				return resp
+			}
+			newPosition := int(requestEnv.Session.Attributes["position"].(float64))
+			return &ResponseEnvelope{Version: "1.0",
+				Response: &Response{
+					OutputSpeech: plainText(page.TextForPosition(newPosition) +
+						" Soll ich noch weiterlesen?"),
+				},
+				SessionAttributes: map[string]interface{}{
+					"word":          requestEnv.Session.Attributes["word"],
+					"position":      newPosition,
+					"last_question": "should_continue",
+				},
+			}
+		case "AMAZON.NextIntent":
 			page, resp := h.pageFromSession(requestEnv.Session)
 			if resp != nil {
 				return resp
@@ -149,15 +189,32 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				},
 			}
 		case "AMAZON.NoIntent":
-			return &ResponseEnvelope{Version: "1.0", Response: &Response{}}
+			if lastQuestionIn(requestEnv.Session) != "should_continue" {
+				return &ResponseEnvelope{Version: "1.0",
+					Response:          &Response{OutputSpeech: plainText("Wie meinen?")},
+					SessionAttributes: requestEnv.Session.Attributes,
+				}
+			}
+			delete(requestEnv.Session.Attributes, "last_question")
+			return &ResponseEnvelope{Version: "1.0",
+				Response:          &Response{OutputSpeech: plainText("Nein? Okay.")},
+				SessionAttributes: requestEnv.Session.Attributes,
+			}
+		case "AMAZON.PauseIntent":
+			delete(requestEnv.Session.Attributes, "last_question")
+			return &ResponseEnvelope{Version: "1.0",
+				Response:          &Response{OutputSpeech: plainText(" ")},
+				SessionAttributes: requestEnv.Session.Attributes,
+			}
 		case "TocIntent":
 			page, resp := h.pageFromSession(requestEnv.Session)
 			if resp != nil {
 				return resp
 			}
+			requestEnv.Session.Attributes["last_question"] = "jump_where"
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
-					OutputSpeech: plainText(page.Toc()),
+					OutputSpeech: plainText(page.Toc() + " Zu welchem Abschnitt möchtest Du springen?"),
 				},
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
@@ -171,17 +228,21 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 			if s == "" {
 				s, position = page.TextAndPositionFromSectionName(sectionTitleOrNumber)
 			}
-			if s == "" {
+			lastQuestion := ""
+			if s != "" {
+				s += "Soll ich noch weiterlesen?"
+				lastQuestion = "should_continue"
+			} else {
 				s = "Ich konnte den angegebenen Abschnitt \"" + sectionTitleOrNumber + "\" nicht finden."
 				position = int(requestEnv.Session.Attributes["position"].(float64))
+				lastQuestion = "none"
 			}
 			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
-					OutputSpeech: plainText(s),
-				},
+				Response: &Response{OutputSpeech: plainText(s)},
 				SessionAttributes: map[string]interface{}{
-					"word":     requestEnv.Session.Attributes["word"],
-					"position": position,
+					"word":          requestEnv.Session.Attributes["word"],
+					"position":      position,
+					"last_question": lastQuestion,
 				},
 			}
 		case "AMAZON.HelpIntent":
@@ -204,6 +265,13 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 	default:
 		return &ResponseEnvelope{Version: "1.0"}
 	}
+}
+
+func lastQuestionIn(session *Session) string {
+	if session.Attributes["last_question"] == nil {
+		return ""
+	}
+	return session.Attributes["last_question"].(string)
 }
 
 func (h *Handler) pageFromSession(session *Session) (wiki.Page, *ResponseEnvelope) {

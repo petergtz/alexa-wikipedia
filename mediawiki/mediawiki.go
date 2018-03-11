@@ -92,6 +92,11 @@ func parse(section *wiki.Section, level int) {
 	section.Body = strings.Trim(sections[0], "\n")
 	section.Subsections = make([]wiki.Section, len(sections)-1)
 	for i, s := range sections[1:] {
+		if level == 2 {
+			section.Subsections[i].Number = wiki.Convert(i + 1)
+		} else {
+			section.Subsections[i].Number = section.Number + "." + wiki.Convert(i+1)
+		}
 		section.Subsections[i].Title = strings.TrimSuffix(strings.TrimPrefix(strings.Trim(sectionTitles[i][1], "\n"), "== "), " ==")
 		section.Subsections[i].Body = s
 		parse(&section.Subsections[i], level+1)
