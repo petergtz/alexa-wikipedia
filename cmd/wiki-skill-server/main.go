@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/petergtz/alexa-wikipedia"
+
 	"go.uber.org/zap"
 
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
@@ -24,7 +26,8 @@ func main() {
 	defer l.Sync()
 	log = l.Sugar()
 
-	http.HandleFunc("/", handler)
+	handler := &Handler{wiki: &mediawiki.MediaWiki{}}
+	http.HandleFunc("/", handler.handle)
 	port := os.Getenv("PORT")
 	if port == "" { // the port variable lets us distinguish between a local server an done in CF
 		log.Debugf("Certificate path: %v", os.Getenv("cert"))
@@ -36,7 +39,11 @@ func main() {
 	log.Fatal(e)
 }
 
-func handler(w http.ResponseWriter, req *http.Request) {
+type Handler struct {
+	wiki wiki.Wiki
+}
+
+func (h *Handler) handle(w http.ResponseWriter, req *http.Request) {
 	requestBody, e := ioutil.ReadAll(req.Body)
 	if e != nil {
 		log.Errorw("Error while reading request body", "error", e)
@@ -55,7 +62,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	output, e := json.Marshal(processRequest(&alexaRequest))
+	output, e := json.Marshal(h.processRequest(&alexaRequest))
 	if e != nil {
 		log.Errorw("Error while marshalling response", "error", e)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -73,31 +80,7 @@ const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
 const quickHelpText = "Suche zunächst nach einem Begriff. " +
 	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
 
-func quickHelp(sessionAttributes map[string]interface{}) *ResponseEnvelope {
-	return &ResponseEnvelope{Version: "1.0",
-		Response:          &Response{OutputSpeech: plainText(quickHelpText)},
-		SessionAttributes: sessionAttributes,
-	}
-}
-
-func wordIn(session *Session) bool {
-	return session.Attributes["word"] != nil
-}
-
-// func pageFromSession(session *Session) (wiki.Page, *ResponseEnvelope) {
-// 	if !wordIn(session) {
-// 		return wiki.Page{}, quickHelp(session.Attributes)
-// 	}
-
-// 	page, e := wiki.GetPage(session.Attributes["word"].(string))
-// 	if e != nil {
-// 		log.Errorw("Could not get Wikipedia page", "error", e)
-// 		return wiki.Page{}, internalError()
-// 	}
-
-// }
-
-func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
+func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 	if requestEnv.Session.Application.ApplicationID != expectedApplicationID {
 		log.Fatalf("ApplicationID does not match: %v", requestEnv.Session.Application.ApplicationID)
 		return internalError()
@@ -123,8 +106,6 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 		intent := requestEnv.Request.Intent
 		switch intent.Name {
 		case "DefineIntent":
-			log.Infof("Slot word: %v", intent.Slots["word"].Value)
-
 			page, e := wiki.GetPage(intent.Slots["word"].Value)
 			if e != nil {
 				if e.Error() == "Page not found on Wikipedia" {
@@ -151,19 +132,15 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 				},
 			}
 		case "AMAZON.NextIntent", "AMAZON.YesIntent", "AMAZON.ResumeIntent":
-			if !wordIn(requestEnv.Session) {
-				return quickHelp(requestEnv.Session.Attributes)
-			}
-			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
-			if e != nil {
-				log.Errorw("Could not get Wikipedia page", "error", e)
-				return internalError()
+			page, resp := h.pageFromSession(requestEnv.Session)
+			if resp != nil {
+				return resp
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
-			s := page.TextForPosition(newPosition)
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
-					OutputSpeech: plainText(s + " Soll ich noch weiterlesen?"),
+					OutputSpeech: plainText(page.TextForPosition(newPosition) +
+						" Soll ich noch weiterlesen?"),
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":          requestEnv.Session.Attributes["word"],
@@ -174,13 +151,9 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 		case "AMAZON.NoIntent":
 			return &ResponseEnvelope{Version: "1.0", Response: &Response{}}
 		case "TocIntent":
-			if !wordIn(requestEnv.Session) {
-				return quickHelp(requestEnv.Session.Attributes)
-			}
-			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
-			if e != nil {
-				log.Errorw("Could not get Wikipedia page", "error", e)
-				return internalError()
+			page, resp := h.pageFromSession(requestEnv.Session)
+			if resp != nil {
+				return resp
 			}
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
@@ -189,13 +162,9 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "GoToSectionIntent":
-			if !wordIn(requestEnv.Session) {
-				return quickHelp(requestEnv.Session.Attributes)
-			}
-			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
-			if e != nil {
-				log.Errorw("Could not get Wikipedia page", "error", e)
-				return internalError()
+			page, resp := h.pageFromSession(requestEnv.Session)
+			if resp != nil {
+				return resp
 			}
 			sectionTitleOrNumber := intent.Slots["section_title_or_number"].Value
 			s, position := page.TextAndPositionFromSectionNumber(sectionTitleOrNumber)
@@ -235,7 +204,30 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 	default:
 		return &ResponseEnvelope{Version: "1.0"}
 	}
+}
 
+func (h *Handler) pageFromSession(session *Session) (wiki.Page, *ResponseEnvelope) {
+	if !wordIn(session) {
+		return wiki.Page{}, quickHelp(session.Attributes)
+	}
+
+	page, e := h.wiki.GetPage(session.Attributes["word"].(string))
+	if e != nil {
+		log.Errorw("Could not get Wikipedia page", "error", e)
+		return wiki.Page{}, internalError()
+	}
+	return page, nil
+}
+
+func quickHelp(sessionAttributes map[string]interface{}) *ResponseEnvelope {
+	return &ResponseEnvelope{Version: "1.0",
+		Response:          &Response{OutputSpeech: plainText(quickHelpText)},
+		SessionAttributes: sessionAttributes,
+	}
+}
+
+func wordIn(session *Session) bool {
+	return session.Attributes["word"] != nil
 }
 
 type RequestEnvelope struct {
