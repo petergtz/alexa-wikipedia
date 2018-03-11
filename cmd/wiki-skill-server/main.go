@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 
 	"go.uber.org/zap"
 
@@ -40,23 +39,63 @@ func main() {
 func handler(w http.ResponseWriter, req *http.Request) {
 	requestBody, e := ioutil.ReadAll(req.Body)
 	if e != nil {
-		panic(e)
+		log.Errorw("Error while reading request body", "error", e)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	var alexaRequest RequestEnvelope
 	e = json.Unmarshal(requestBody, &alexaRequest)
 	if e != nil {
-		panic(e)
+		log.Errorw("Error while unmarshaling request body", "error", e)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	if alexaRequest.Session == nil {
-		panic("Empty session")
+		log.Errorw("Session is empty", "error", e)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	output, e := json.Marshal(processRequest(&alexaRequest))
 	if e != nil {
-		panic(e)
+		log.Errorw("Error while marshalling response", "error", e)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write(output)
 }
+
+const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
+	"sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". " +
+	"Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. " +
+	"Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen."
+
+const quickHelpText = "Suche zunächst nach einem Begriff. " +
+	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
+
+func quickHelp(sessionAttributes map[string]interface{}) *ResponseEnvelope {
+	return &ResponseEnvelope{Version: "1.0",
+		Response:          &Response{OutputSpeech: plainText(quickHelpText)},
+		SessionAttributes: sessionAttributes,
+	}
+}
+
+func wordIn(session *Session) bool {
+	return session.Attributes["word"] != nil
+}
+
+// func pageFromSession(session *Session) (wiki.Page, *ResponseEnvelope) {
+// 	if !wordIn(session) {
+// 		return wiki.Page{}, quickHelp(session.Attributes)
+// 	}
+
+// 	page, e := wiki.GetPage(session.Attributes["word"].(string))
+// 	if e != nil {
+// 		log.Errorw("Could not get Wikipedia page", "error", e)
+// 		return wiki.Page{}, internalError()
+// 	}
+
+// }
 
 func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 	if requestEnv.Session.Application.ApplicationID != expectedApplicationID {
@@ -66,20 +105,24 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 
 	wiki := &mediawiki.MediaWiki{}
 
+	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
+		"SessionAttributes", requestEnv.Session.Attributes)
 	switch requestEnv.Request.Type {
 
 	case "LaunchRequest":
 		return &ResponseEnvelope{Version: "1.0",
 			Response: &Response{
-				OutputSpeech: plainText("Du befindest Dich jetzt bei Wikipedia. Um einen Artikel vorgelesen zu bekommen, " +
-					"sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."),
+				OutputSpeech: plainText("Du befindest Dich jetzt bei Wikipedia. " + helpText),
+			},
+			SessionAttributes: map[string]interface{}{
+				"last_question": "none",
 			},
 		}
 
 	case "IntentRequest":
 		intent := requestEnv.Request.Intent
 		switch intent.Name {
-		case "define":
+		case "DefineIntent":
 			log.Infof("Slot word: %v", intent.Slots["word"].Value)
 
 			page, e := wiki.GetPage(intent.Slots["word"].Value)
@@ -102,32 +145,38 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 						"Soll ich zunächst einfach weiterlesen?"),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":     intent.Slots["word"].Value,
-					"position": 0,
+					"word":          intent.Slots["word"].Value,
+					"position":      0,
+					"last_question": "should_continue",
 				},
 			}
-		case "AMAZON.YesIntent", "AMAZON.ResumeIntent":
+		case "AMAZON.NextIntent", "AMAZON.YesIntent", "AMAZON.ResumeIntent":
+			if !wordIn(requestEnv.Session) {
+				return quickHelp(requestEnv.Session.Attributes)
+			}
 			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
 			if e != nil {
 				log.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
-			log.Debugw("Yes", "new_position", newPosition)
-			// log.Debugf("%#v", page)
 			s := page.TextForPosition(newPosition)
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
 					OutputSpeech: plainText(s + " Soll ich noch weiterlesen?"),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":     requestEnv.Session.Attributes["word"],
-					"position": newPosition,
+					"word":          requestEnv.Session.Attributes["word"],
+					"position":      newPosition,
+					"last_question": "should_continue",
 				},
 			}
 		case "AMAZON.NoIntent":
 			return &ResponseEnvelope{Version: "1.0", Response: &Response{}}
-		case "toc":
+		case "TocIntent":
+			if !wordIn(requestEnv.Session) {
+				return quickHelp(requestEnv.Session.Attributes)
+			}
 			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
 			if e != nil {
 				log.Errorw("Could not get Wikipedia page", "error", e)
@@ -139,19 +188,18 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 				},
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
-		case "goto_section":
+		case "GoToSectionIntent":
+			if !wordIn(requestEnv.Session) {
+				return quickHelp(requestEnv.Session.Attributes)
+			}
 			page, e := wiki.GetPage(requestEnv.Session.Attributes["word"].(string))
 			if e != nil {
 				log.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
 			}
 			sectionTitleOrNumber := intent.Slots["section_title_or_number"].Value
-			sectionNumber, e := strconv.Atoi(sectionTitleOrNumber)
-			s := ""
-			position := 0
-			if e == nil {
-				s, position = page.TextAndPositionFromSectionNumber(sectionNumber)
-			} else {
+			s, position := page.TextAndPositionFromSectionNumber(sectionTitleOrNumber)
+			if s == "" {
 				s, position = page.TextAndPositionFromSectionName(sectionTitleOrNumber)
 			}
 			if s == "" {
@@ -170,22 +218,12 @@ func processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
 		case "AMAZON.HelpIntent":
 			return &ResponseEnvelope{Version: "1.0",
 				Response: &Response{
-					OutputSpeech: plainText("Hier muss noch ein Hilfetext her"),
+					OutputSpeech: plainText(helpText),
 				},
 			}
-		case "AMAZON.CancelIntent":
+		case "AMAZON.CancelIntent", "AMAZON.StopIntent":
 			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
-					OutputSpeech:     plainText("Hier muss noch ein Text her."),
-					ShouldSessionEnd: true,
-				},
-			}
-		case "AMAZON.StopIntent":
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
-					OutputSpeech:     plainText("Hier muss noch ein Text her."),
-					ShouldSessionEnd: true,
-				},
+				Response: &Response{ShouldSessionEnd: true},
 			}
 		default:
 			return internalError()

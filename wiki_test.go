@@ -78,4 +78,14 @@ var _ = Describe("Wiki", func() {
 		Expect(page.TextForPosition(7)).To(Equal("C.B. Body C.B"))
 	})
 
+	It("Can get section 3", func() {
+		text, _ := page.TextAndPositionFromSectionNumber("drei")
+		Expect(text).To(Equal("C. C.A. Body C.A"))
+	})
+
+	It("Can get section 3.2", func() {
+		text, _ := page.TextAndPositionFromSectionNumber("drei punkt zwei")
+		Expect(text).To(Equal("C.B. Body C.B"))
+	})
+
 })
