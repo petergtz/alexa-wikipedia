@@ -1,0 +1,6 @@
+---
+applications:
+- name: alexa-wikipedia
+  memory: 128M
+  env:
+     GOPACKAGENAME: github.com/petergtz/alexa-wikipedia

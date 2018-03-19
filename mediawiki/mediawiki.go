@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	wiki "github.com/petergtz/alexa-wikipedia"
+	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
 type MediaWiki struct {

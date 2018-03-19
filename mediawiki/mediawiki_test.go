@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	wiki "github.com/petergtz/alexa-wikipedia"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
+	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
 var _ = Describe("Mediawiki", func() {

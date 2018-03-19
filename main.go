@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/petergtz/alexa-wikipedia"
-
 	"go.uber.org/zap"
 
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
+	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
 var (
