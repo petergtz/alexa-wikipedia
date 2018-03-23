@@ -2,5 +2,6 @@
 applications:
 - name: alexa-wikipedia
   memory: 128M
+  instances: 3
   env:
      GOPACKAGENAME: github.com/petergtz/alexa-wikipedia
