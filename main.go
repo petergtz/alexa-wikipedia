@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -42,6 +44,8 @@ type Handler struct {
 	wiki wiki.Wiki
 }
 
+const timeLimit float64 = 150
+
 func (h *Handler) handle(w http.ResponseWriter, req *http.Request) {
 	if !IsValidAlexaRequest(w, req) {
 		return
@@ -62,9 +66,25 @@ func (h *Handler) handle(w http.ResponseWriter, req *http.Request) {
 	}
 	if alexaRequest.Session == nil {
 		log.Errorw("Session is empty", "error", e)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Session is empty", http.StatusBadRequest)
 		return
 	}
+	if alexaRequest.Session.Application.ApplicationID != expectedApplicationID {
+		log.Errorf("ApplicationID does not match: %v", alexaRequest.Session.Application.ApplicationID)
+		http.Error(w, "Invalid ApplicationID", http.StatusBadRequest)
+		return
+	}
+	timestamp, e := time.Parse("2006-01-02T15:04:05Z", alexaRequest.Request.Timestamp)
+	if e != nil {
+		log.Errorf("Invalid timestamp. Timestamp: %v", alexaRequest.Request.Timestamp)
+		http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
+	}
+	if math.Abs(time.Since(timestamp).Seconds()) > timeLimit {
+		log.Errorf("Timestamp not within time limit. Timestamp: %v", alexaRequest.Request.Timestamp)
+		http.Error(w, "Timestamp not within time limit", http.StatusBadRequest)
+		return
+	}
+
 	output, e := json.Marshal(h.processRequest(&alexaRequest))
 	if e != nil {
 		log.Errorw("Error while marshalling response", "error", e)
@@ -84,11 +104,6 @@ const quickHelpText = "Suche zunächst nach einem Begriff. " +
 	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
 
 func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
-	if requestEnv.Session.Application.ApplicationID != expectedApplicationID {
-		log.Fatalf("ApplicationID does not match: %v", requestEnv.Session.Application.ApplicationID)
-		return internalError()
-	}
-
 	wiki := &mediawiki.MediaWiki{}
 
 	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
