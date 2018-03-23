@@ -43,6 +43,10 @@ type Handler struct {
 }
 
 func (h *Handler) handle(w http.ResponseWriter, req *http.Request) {
+	if !IsValidAlexaRequest(w, req) {
+		return
+	}
+
 	requestBody, e := ioutil.ReadAll(req.Body)
 	if e != nil {
 		log.Errorw("Error while reading request body", "error", e)

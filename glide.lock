@@ -1,5 +1,5 @@
-hash: 1fd530c69963a24ef5f3951e373d3fe17c795bcfe73b5b23dba5c3f35f03947a
-updated: 2018-03-06T22:01:37.423837+01:00
+hash: e5eed581bff215c65f8fcb769773bf6802833163617b0d7f929135da5a26d467
+updated: 2018-03-23T20:39:36.671152+01:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
   version: 5669a59bb223f3afeace7a8f8d1cf4ec938daba1
@@ -7,10 +7,6 @@ imports:
   version: 190166da35878a77103b951ae035a473531c1fc2
 - name: github.com/k3a/html2text
   version: ab70b34187c4604d303fa56569efef07cb7753e6
-- name: github.com/mattn/go-runewidth
-  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
-- name: github.com/olekukonko/tablewriter
-  version: b8a9be070da40449e501c3c4730a889e42d87a9e
 - name: github.com/onsi/ginkgo
   version: a23f924ce96d61f963fb6219b8ff069d8d768cc2
   subpackages:
@@ -45,12 +41,12 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/patrickmn/go-cache
+  version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
 - name: github.com/pkg/errors
   version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: github.com/pkg/math
   version: f2ed9e40e245cdeec72c4b642d27ed4553f90667
-- name: github.com/ssor/bom
-  version: 6386211fdfcf24c0bfbdaceafd02849ed9a8a509
 - name: go.uber.org/atomic
   version: 8474b86a5a6f79c443ce4b2992817ff32cf208b8
 - name: go.uber.org/multierr
@@ -63,15 +59,36 @@ imports:
   - internal/color
   - internal/exit
   - zapcore
+testImports:
 - name: golang.org/x/net
   version: 1f9224279e98554b6a6432d4dd998a739f8b2b7c
   subpackages:
   - html
   - html/atom
-testImports:
+  - html/charset
 - name: golang.org/x/sys
   version: d75a52659825e75fff6158388dddc6a5b04f9ba5
   subpackages:
   - unix
+- name: golang.org/x/text
+  version: 8c34f848e18c4bd34d02db7f19a0ed1a0a8f5852
+  subpackages:
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - internal/language
+  - internal/language/compact
+  - internal/tag
+  - internal/utf8internal
+  - language
+  - runes
+  - transform
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
