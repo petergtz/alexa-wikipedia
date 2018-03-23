@@ -215,7 +215,10 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 			}
 			delete(requestEnv.Session.Attributes, "last_question")
 			return &ResponseEnvelope{Version: "1.0",
-				Response:          &Response{OutputSpeech: plainText("Nein? Okay.")},
+				Response: &Response{
+					OutputSpeech:     plainText("Nein? Okay."),
+					ShouldSessionEnd: true,
+				},
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "AMAZON.PauseIntent":
