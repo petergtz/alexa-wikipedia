@@ -1,5 +1,5 @@
-hash: e5eed581bff215c65f8fcb769773bf6802833163617b0d7f929135da5a26d467
-updated: 2018-03-23T20:39:36.671152+01:00
+hash: 36471a2b3f33aca4a0bdf04e7bdc62e546ce398bb8c813d2c4f196e03ff2dfac
+updated: 2018-03-24T23:22:35.502234+01:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
   version: 5669a59bb223f3afeace7a8f8d1cf4ec938daba1
@@ -43,6 +43,8 @@ imports:
   - types
 - name: github.com/patrickmn/go-cache
   version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
+- name: github.com/petergtz/go-alexa
+  version: f2fe0b6105af830c065d1fb976443a3c1a5d4053
 - name: github.com/pkg/errors
   version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: github.com/pkg/math

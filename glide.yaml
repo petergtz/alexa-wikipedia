@@ -10,3 +10,4 @@ import:
   - ginkgo
 - package: github.com/onsi/gomega
 - package: github.com/patrickmn/go-cache
+- package: github.com/petergtz/go-alexa

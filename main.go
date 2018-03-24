@@ -1,22 +1,18 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"math"
 	"net/http"
 	"os"
-	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/petergtz/alexa-wikipedia/wiki"
+	"github.com/petergtz/go-alexa"
 )
 
 var (
-	log                   *zap.SugaredLogger
-	expectedApplicationID = os.Getenv("APPLICATION_ID")
+	log *zap.SugaredLogger
 )
 
 func main() {
@@ -27,8 +23,14 @@ func main() {
 	defer l.Sync()
 	log = l.Sugar()
 
-	handler := &Handler{wiki: &mediawiki.MediaWiki{}}
-	http.HandleFunc("/", handler.handle)
+	handler := &alexa.Handler{
+		Skill: &WikipediaSkill{
+			wiki: &mediawiki.MediaWiki{},
+		},
+		Log: log,
+		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
+	}
+	http.HandleFunc("/", handler.Handle)
 	port := os.Getenv("PORT")
 	if port == "" { // the port variable lets us distinguish between a local server an done in CF
 		log.Debugf("Certificate path: %v", os.Getenv("cert"))
@@ -40,59 +42,8 @@ func main() {
 	log.Fatal(e)
 }
 
-type Handler struct {
+type WikipediaSkill struct {
 	wiki wiki.Wiki
-}
-
-const timeLimit float64 = 150
-
-func (h *Handler) handle(w http.ResponseWriter, req *http.Request) {
-	if !IsValidAlexaRequest(w, req) {
-		return
-	}
-
-	requestBody, e := ioutil.ReadAll(req.Body)
-	if e != nil {
-		log.Errorw("Error while reading request body", "error", e)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	var alexaRequest RequestEnvelope
-	e = json.Unmarshal(requestBody, &alexaRequest)
-	if e != nil {
-		log.Errorw("Error while unmarshaling request body", "error", e)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if alexaRequest.Session == nil {
-		log.Errorw("Session is empty", "error", e)
-		http.Error(w, "Session is empty", http.StatusBadRequest)
-		return
-	}
-	if alexaRequest.Session.Application.ApplicationID != expectedApplicationID {
-		log.Errorf("ApplicationID does not match: %v", alexaRequest.Session.Application.ApplicationID)
-		http.Error(w, "Invalid ApplicationID", http.StatusBadRequest)
-		return
-	}
-	timestamp, e := time.Parse("2006-01-02T15:04:05Z", alexaRequest.Request.Timestamp)
-	if e != nil {
-		log.Errorf("Invalid timestamp. Timestamp: %v", alexaRequest.Request.Timestamp)
-		http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
-	}
-	if math.Abs(time.Since(timestamp).Seconds()) > timeLimit {
-		log.Errorf("Timestamp not within time limit. Timestamp: %v", alexaRequest.Request.Timestamp)
-		http.Error(w, "Timestamp not within time limit", http.StatusBadRequest)
-		return
-	}
-
-	output, e := json.Marshal(h.processRequest(&alexaRequest))
-	if e != nil {
-		log.Errorw("Error while marshalling response", "error", e)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write(output)
 }
 
 const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
@@ -103,7 +54,7 @@ const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
 const quickHelpText = "Suche zunächst nach einem Begriff. " +
 	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
 
-func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope {
+func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
 	wiki := &mediawiki.MediaWiki{}
 
 	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
@@ -111,8 +62,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 	switch requestEnv.Request.Type {
 
 	case "LaunchRequest":
-		return &ResponseEnvelope{Version: "1.0",
-			Response: &Response{
+		return &alexa.ResponseEnvelope{Version: "1.0",
+			Response: &alexa.Response{
 				OutputSpeech: plainText("Du befindest Dich jetzt bei Wikipedia. " + helpText),
 			},
 			SessionAttributes: map[string]interface{}{
@@ -127,8 +78,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 			page, e := wiki.GetPage(intent.Slots["word"].Value)
 			if e != nil {
 				if e.Error() == "Page not found on Wikipedia" {
-					return &ResponseEnvelope{Version: "1.0",
-						Response: &Response{
+					return &alexa.ResponseEnvelope{Version: "1.0",
+						Response: &alexa.Response{
 							OutputSpeech: plainText("Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."),
 						},
 					}
@@ -136,8 +87,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				log.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
 			}
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech: plainText(page.Body +
 						" Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 						" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
@@ -151,8 +102,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 			}
 		case "AMAZON.YesIntent", "AMAZON.ResumeIntent":
 			if lastQuestionIn(requestEnv.Session) != "should_continue" {
-				return &ResponseEnvelope{Version: "1.0",
-					Response:          &Response{OutputSpeech: plainText("Wie meinen?")},
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response:          &alexa.Response{OutputSpeech: plainText("Wie meinen?")},
 					SessionAttributes: requestEnv.Session.Attributes,
 				}
 			}
@@ -161,8 +112,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				return resp
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech: plainText(page.TextForPosition(newPosition) +
 						" Soll ich noch weiterlesen?"),
 				},
@@ -178,8 +129,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				return resp
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64))
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech: plainText(page.TextForPosition(newPosition) +
 						" Soll ich noch weiterlesen?"),
 				},
@@ -195,8 +146,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				return resp
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech: plainText(page.TextForPosition(newPosition) +
 						" Soll ich noch weiterlesen?"),
 				},
@@ -208,14 +159,14 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 			}
 		case "AMAZON.NoIntent":
 			if lastQuestionIn(requestEnv.Session) != "should_continue" {
-				return &ResponseEnvelope{Version: "1.0",
-					Response:          &Response{OutputSpeech: plainText("Wie meinen?")},
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response:          &alexa.Response{OutputSpeech: plainText("Wie meinen?")},
 					SessionAttributes: requestEnv.Session.Attributes,
 				}
 			}
 			delete(requestEnv.Session.Attributes, "last_question")
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech:     plainText("Nein? Okay."),
 					ShouldSessionEnd: true,
 				},
@@ -223,8 +174,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 			}
 		case "AMAZON.PauseIntent":
 			delete(requestEnv.Session.Attributes, "last_question")
-			return &ResponseEnvelope{Version: "1.0",
-				Response:          &Response{OutputSpeech: plainText(" ")},
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response:          &alexa.Response{OutputSpeech: plainText(" ")},
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "TocIntent":
@@ -233,8 +184,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				return resp
 			}
 			requestEnv.Session.Attributes["last_question"] = "jump_where"
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech: plainText(page.Toc() + " Zu welchem Abschnitt möchtest Du springen?"),
 				},
 				SessionAttributes: requestEnv.Session.Attributes,
@@ -258,8 +209,8 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				position = int(requestEnv.Session.Attributes["position"].(float64))
 				lastQuestion = "none"
 			}
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{OutputSpeech: plainText(s)},
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{OutputSpeech: plainText(s)},
 				SessionAttributes: map[string]interface{}{
 					"word":          requestEnv.Session.Attributes["word"],
 					"position":      position,
@@ -267,35 +218,35 @@ func (h *Handler) processRequest(requestEnv *RequestEnvelope) *ResponseEnvelope 
 				},
 			}
 		case "AMAZON.HelpIntent":
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
 					OutputSpeech: plainText(helpText),
 				},
 			}
 		case "AMAZON.CancelIntent", "AMAZON.StopIntent":
-			return &ResponseEnvelope{Version: "1.0",
-				Response: &Response{ShouldSessionEnd: true},
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{ShouldSessionEnd: true},
 			}
 		default:
 			return internalError()
 		}
 
 	case "SessionEndedRequest":
-		return &ResponseEnvelope{Version: "1.0"}
+		return &alexa.ResponseEnvelope{Version: "1.0"}
 
 	default:
-		return &ResponseEnvelope{Version: "1.0"}
+		return &alexa.ResponseEnvelope{Version: "1.0"}
 	}
 }
 
-func lastQuestionIn(session *Session) string {
+func lastQuestionIn(session *alexa.Session) string {
 	if session.Attributes["last_question"] == nil {
 		return ""
 	}
 	return session.Attributes["last_question"].(string)
 }
 
-func (h *Handler) pageFromSession(session *Session) (wiki.Page, *ResponseEnvelope) {
+func (h *WikipediaSkill) pageFromSession(session *alexa.Session) (wiki.Page, *alexa.ResponseEnvelope) {
 	if !wordIn(session) {
 		return wiki.Page{}, quickHelp(session.Attributes)
 	}
@@ -308,140 +259,24 @@ func (h *Handler) pageFromSession(session *Session) (wiki.Page, *ResponseEnvelop
 	return page, nil
 }
 
-func quickHelp(sessionAttributes map[string]interface{}) *ResponseEnvelope {
-	return &ResponseEnvelope{Version: "1.0",
-		Response:          &Response{OutputSpeech: plainText(quickHelpText)},
+func quickHelp(sessionAttributes map[string]interface{}) *alexa.ResponseEnvelope {
+	return &alexa.ResponseEnvelope{Version: "1.0",
+		Response:          &alexa.Response{OutputSpeech: plainText(quickHelpText)},
 		SessionAttributes: sessionAttributes,
 	}
 }
 
-func wordIn(session *Session) bool {
+func wordIn(session *alexa.Session) bool {
 	return session.Attributes["word"] != nil
 }
 
-type RequestEnvelope struct {
-	Version string   `json:"version"`
-	Session *Session `json:"session"`
-	Request *Request `json:"request"`
-	// TODO Add Request Context
+func plainText(text string) *alexa.OutputSpeech {
+	return &alexa.OutputSpeech{Type: "PlainText", Text: text}
 }
 
-// Session containes the session data from the Alexa request.
-type Session struct {
-	New        bool                   `json:"new"`
-	SessionID  string                 `json:"sessionId"`
-	Attributes map[string]interface{} `json:"attributes"`
-	User       struct {
-		UserID      string `json:"userId"`
-		AccessToken string `json:"accessToken"`
-	} `json:"user"`
-	Application struct {
-		ApplicationID string `json:"applicationId"`
-	} `json:"application"`
-}
-
-// Request contines the data in the request within the main request.
-type Request struct {
-	Locale      string `json:"locale"`
-	Timestamp   string `json:"timestamp"`
-	Type        string `json:"type"`
-	RequestID   string `json:"requestId"`
-	DialogState string `json:"dialogState"`
-	Intent      Intent `json:"intent"`
-	Name        string `json:"name"`
-}
-
-// Intent contains the data about the Alexa Intent requested.
-type Intent struct {
-	Name               string                `json:"name"`
-	ConfirmationStatus string                `json:"confirmationStatus,omitempty"`
-	Slots              map[string]IntentSlot `json:"slots"`
-}
-
-// IntentSlot contains the data for one Slot
-type IntentSlot struct {
-	Name               string `json:"name"`
-	ConfirmationStatus string `json:"confirmationStatus,omitempty"`
-	Value              string `json:"value"`
-}
-
-// ResponseEnvelope contains the Response and additional attributes.
-type ResponseEnvelope struct {
-	Version           string                 `json:"version"`
-	SessionAttributes map[string]interface{} `json:"sessionAttributes,omitempty"`
-	Response          *Response              `json:"response"`
-}
-
-// Response contains the body of the response.
-type Response struct {
-	OutputSpeech     *OutputSpeech `json:"outputSpeech,omitempty"`
-	Card             *Card         `json:"card,omitempty"`
-	Reprompt         *Reprompt     `json:"reprompt,omitempty"`
-	Directives       []interface{} `json:"directives,omitempty"`
-	ShouldSessionEnd bool          `json:"shouldEndSession"`
-}
-
-// OutputSpeech contains the data the defines what Alexa should say to the user.
-type OutputSpeech struct {
-	Type string `json:"type"`
-	Text string `json:"text,omitempty"`
-	SSML string `json:"ssml,omitempty"`
-}
-
-// Card contains the data displayed to the user by the Alexa app.
-type Card struct {
-	Type    string `json:"type"`
-	Title   string `json:"title,omitempty"`
-	Content string `json:"content,omitempty"`
-	Text    string `json:"text,omitempty"`
-	Image   *Image `json:"image,omitempty"`
-}
-
-// Image provides URL(s) to the image to display in resposne to the request.
-type Image struct {
-	SmallImageURL string `json:"smallImageUrl,omitempty"`
-	LargeImageURL string `json:"largeImageUrl,omitempty"`
-}
-
-// Reprompt contains data about whether Alexa should prompt the user for more data.
-type Reprompt struct {
-	OutputSpeech *OutputSpeech `json:"outputSpeech,omitempty"`
-}
-
-// AudioPlayerDirective contains device level instructions on how to handle the response.
-type AudioPlayerDirective struct {
-	Type         string     `json:"type"`
-	PlayBehavior string     `json:"playBehavior,omitempty"`
-	AudioItem    *AudioItem `json:"audioItem,omitempty"`
-}
-
-// AudioItem contains an audio Stream definition for playback.
-type AudioItem struct {
-	Stream Stream `json:"stream,omitempty"`
-}
-
-// Stream contains instructions on playing an audio stream.
-type Stream struct {
-	Token                string `json:"token"`
-	URL                  string `json:"url"`
-	OffsetInMilliseconds int    `json:"offsetInMilliseconds"`
-}
-
-// DialogDirective contains directives for use in Dialog prompts.
-type DialogDirective struct {
-	Type          string  `json:"type"`
-	SlotToElicit  string  `json:"slotToElicit,omitempty"`
-	SlotToConfirm string  `json:"slotToConfirm,omitempty"`
-	UpdatedIntent *Intent `json:"updatedIntent,omitempty"`
-}
-
-func plainText(text string) *OutputSpeech {
-	return &OutputSpeech{Type: "PlainText", Text: text}
-}
-
-func internalError() *ResponseEnvelope {
-	return &ResponseEnvelope{Version: "1.0",
-		Response: &Response{
+func internalError() *alexa.ResponseEnvelope {
+	return &alexa.ResponseEnvelope{Version: "1.0",
+		Response: &alexa.Response{
 			OutputSpeech:     plainText("Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia."),
 			ShouldSessionEnd: false,
 		},
