@@ -89,8 +89,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					log.Errorw("Could not get Wikipedia page", "error", e)
 					return internalError()
 				default:
-					definition = "Einen exakten Treffer konnte ich zu \"" + intent.Slots["word"].Value + "\" leider nicht finden. " +
-						"Stattdessen fand ich \"" + page.Title + "\".\n\n" + page.Body
+					definition = page.Body
 				}
 			case e != nil:
 				log.Errorw("Could not get Wikipedia page", "error", e)
