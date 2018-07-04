@@ -16,6 +16,7 @@ type Section struct {
 
 type Wiki interface {
 	GetPage(url string) (Page, error)
+	SearchPage(url string) (Page, error)
 }
 
 func (p Page) TextForPosition(position int) string {

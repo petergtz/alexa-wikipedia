@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	wiki "github.com/petergtz/alexa-wikipedia"
+	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
 var page = wiki.Page{

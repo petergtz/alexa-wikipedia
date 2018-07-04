@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -47,8 +48,17 @@ type ParseQuery struct {
 	}
 }
 
+type SearchQuery struct {
+	Query struct {
+		Search []struct {
+			Title  string
+			Pageid int
+		}
+	}
+}
+
 func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
-	extract := ExtractQuery{}
+	var extract ExtractQuery
 	e := makeJsonRequest("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true", &extract)
 	if e != nil {
 		return wiki.Page{}, e
@@ -57,6 +67,28 @@ func (mw *MediaWiki) GetPage(word string) (wiki.Page, error) {
 		return wiki.Page{}, errors.New("Page not found on Wikipedia")
 	}
 	return WikiPageFrom(extract.Query.Pages[0]), nil
+}
+
+func (mw *MediaWiki) SearchPage(word string) (wiki.Page, error) {
+	var search SearchQuery
+	e := makeJsonRequest("https://de.wikipedia.org/w/api.php?format=json&action=query&list=search&srsearch="+url.QueryEscape(word)+"&srprop=&utf8=", &search)
+	if e != nil {
+		return wiki.Page{}, e
+	}
+	if len(search.Query.Search) == 0 {
+		return wiki.Page{}, errors.New("Page not found on Wikipedia")
+	}
+
+	var extract ExtractQuery
+	e = makeJsonRequest("https://de.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&pageids="+strconv.Itoa(search.Query.Search[0].Pageid)+"&redirects=true&formatversion=2&explaintext=true", &extract)
+	if e != nil {
+		return wiki.Page{}, e
+	}
+	if extract.Query.Pages[0].Missing {
+		return wiki.Page{}, errors.New("Page not found on Wikipedia")
+	}
+	return WikiPageFrom(extract.Query.Pages[0]), nil
+
 }
 
 func makeJsonRequest(url string, data interface{}) error {

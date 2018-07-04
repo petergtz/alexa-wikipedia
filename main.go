@@ -55,8 +55,6 @@ const quickHelpText = "Suche zunächst nach einem Begriff. " +
 	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
 
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
-	wiki := &mediawiki.MediaWiki{}
-
 	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
 		"SessionAttributes", requestEnv.Session.Attributes)
 	switch requestEnv.Request.Type {
@@ -75,21 +73,34 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		intent := requestEnv.Request.Intent
 		switch intent.Name {
 		case "DefineIntent":
-			page, e := wiki.GetPage(intent.Slots["word"].Value)
-			if e != nil {
-				if e.Error() == "Page not found on Wikipedia" {
+			var definition string
+			page, e := h.wiki.GetPage(intent.Slots["word"].Value)
+			switch {
+			case isNotFoundError(e):
+				page, e = h.wiki.SearchPage(intent.Slots["word"].Value)
+				switch {
+				case isNotFoundError(e):
 					return &alexa.ResponseEnvelope{Version: "1.0",
 						Response: &alexa.Response{
 							OutputSpeech: plainText("Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."),
 						},
 					}
+				case e != nil:
+					log.Errorw("Could not get Wikipedia page", "error", e)
+					return internalError()
+				default:
+					definition = "Einen exakten Treffer konnte ich zu \"" + intent.Slots["word"].Value + "\" leider nicht finden. " +
+						"Stattdessen fand ich \"" + page.Title + "\".\n\n" + page.Body
 				}
+			case e != nil:
 				log.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
+			default:
+				definition = page.Body
 			}
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.Body +
+					OutputSpeech: plainText(definition +
 						" Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 						" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
 						"Soll ich zunächst einfach weiterlesen?"),
@@ -237,6 +248,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 	default:
 		return &alexa.ResponseEnvelope{Version: "1.0"}
 	}
+}
+
+func isNotFoundError(e error) bool {
+	return e != nil && e.Error() == "Page not found on Wikipedia"
 }
 
 func lastQuestionIn(session *alexa.Session) string {
