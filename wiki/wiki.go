@@ -45,7 +45,7 @@ func traverse(s Section, cur int, target int, prefix string) (text string, new_c
 	return "", cur
 }
 
-var numbers = []string{"null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf"}
+var numbers = []string{"null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn", "zwanzig"}
 
 func (p Page) TextAndPositionFromSectionNumber(sectionNumber string) (text string, position int) {
 	return traverse2(Section(p), 0, 1, 0, sectionNumber, "")
