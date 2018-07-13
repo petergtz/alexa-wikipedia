@@ -266,7 +266,21 @@ func (h *WikipediaSkill) pageFromSession(session *alexa.Session) (wiki.Page, *al
 	}
 
 	page, e := h.wiki.GetPage(session.Attributes["word"].(string))
-	if e != nil {
+	switch {
+	case isNotFoundError(e):
+		page, e = h.wiki.SearchPage(session.Attributes["word"].(string))
+		switch {
+		case isNotFoundError(e):
+			return wiki.Page{}, &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
+					OutputSpeech: plainText("Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."),
+				},
+			}
+		case e != nil:
+			log.Errorw("Could not get Wikipedia page", "error", e)
+			return wiki.Page{}, internalError()
+		}
+	case e != nil:
 		log.Errorw("Could not get Wikipedia page", "error", e)
 		return wiki.Page{}, internalError()
 	}
