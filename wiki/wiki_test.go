@@ -12,38 +12,46 @@ var page = wiki.Page{
 	Body:  "Intro",
 	Subsections: []wiki.Section{
 		wiki.Section{
-			Title: "A",
-			Body:  "Body A",
+			Number: wiki.Convert(1),
+			Title:  "A",
+			Body:   "Body A",
 		},
 		wiki.Section{
-			Title: "B",
-			Body:  "Body B",
+			Number: wiki.Convert(2),
+			Title:  "B",
+			Body:   "Body B",
 		},
 		wiki.Section{
-			Title: "C",
-			Body:  "",
+			Number: wiki.Convert(3),
+			Title:  "C",
+			Body:   "",
 			Subsections: []wiki.Section{
 				wiki.Section{
-					Title: "C.A",
-					Body:  "Body C.A",
+					Number: wiki.Convert(3) + "." + wiki.Convert(1),
+					Title:  "C.A",
+					Body:   "Body C.A",
 					Subsections: []wiki.Section{
 						wiki.Section{
-							Title: "C.A.A",
-							Body:  "Body C.A.A",
+							Number: wiki.Convert(3) + "." + wiki.Convert(1) + "." + wiki.Convert(1),
+							Title:  "C.A.A",
+							Body:   "Body C.A.A",
 						},
 						wiki.Section{
-							Title: "C.A.B",
-							Body:  "Body C.A.B",
+							Number: wiki.Convert(3) + "." + wiki.Convert(1) + "." + wiki.Convert(2),
+							Title:  "C.A.B",
+							Body:   "Body C.A.B",
 						},
 						wiki.Section{
-							Title: "C.A.C",
-							Body:  "Body C.A.C",
+							Number: wiki.Convert(3) + "." + wiki.Convert(1) + "." + wiki.Convert(3),
+							Title:  "C.A.C",
+							Body:   "Body C.A.C",
 						},
 					},
 				},
 				wiki.Section{
-					Title: "C.B",
-					Body:  "Body C.B",
+					Number: wiki.Convert(3) + "." + wiki.Convert(2),
+					Title:  "C.B",
+					Body:   "Body C.B",
 				},
 			},
 		},
@@ -80,12 +88,12 @@ var _ = Describe("Wiki", func() {
 
 	It("Can get section 3", func() {
 		text, _ := page.TextAndPositionFromSectionNumber("drei")
-		Expect(text).To(Equal("C. C.A. Body C.A"))
+		Expect(text).To(Equal("Abschnitt drei. C. Abschnitt drei.eins. C.A. Body C.A"))
 	})
 
 	It("Can get section 3.2", func() {
 		text, _ := page.TextAndPositionFromSectionNumber("drei punkt zwei")
-		Expect(text).To(Equal("C.B. Body C.B"))
+		Expect(text).To(Equal("Abschnitt drei.zwei. C.B. Body C.B"))
 	})
 
 })
