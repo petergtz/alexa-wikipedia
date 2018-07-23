@@ -1,7 +1,10 @@
 ---
 applications:
 - name: alexa-wikipedia
-  memory: 128M
+  memory: 64M
   instances: 3
   env:
      GOPACKAGENAME: github.com/petergtz/alexa-wikipedia
+  routes:
+  - route: alexa-wikipedia.eu-gb.mybluemix.net
+  buildpack: go_buildpack
