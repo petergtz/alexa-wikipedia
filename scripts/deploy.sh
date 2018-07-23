@@ -10,8 +10,11 @@ fi
 ginkgo -r
 
 export SHA=$(git rev-parse --short HEAD)
+export APP_NAME=alexa-wikipedia-$SHA
 
-cf push alexa-wikipedia-$SHA
+cf push --no-start $APP_NAME
+cf set-env $APP_NAME APPLICATION_ID $(lpass show Personal/Alexa-Wikipedia-Skill-Application-ID --password)
+cf restart $APP_NAME
 
 export OLD_RELEASES=$(cf apps | grep alexa-wikipedia | grep -v $SHA | cut -f 1 -d ' ')
 
