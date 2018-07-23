@@ -12,3 +12,9 @@ ginkgo -r
 export SHA=$(git rev-parse --short HEAD)
 
 cf push alexa-wikipedia-$SHA
+
+export OLD_RELEASES=$(cf apps | grep alexa-wikipedia | grep -v $SHA | cut -f 1 -d ' ')
+
+for release in $OLD_RELEASES; do
+    cf delete -f $release
+done
