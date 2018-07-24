@@ -1,12 +1,19 @@
-hash: 36471a2b3f33aca4a0bdf04e7bdc62e546ce398bb8c813d2c4f196e03ff2dfac
-updated: 2018-06-18T23:31:12.03213+02:00
+hash: 501f756e6ed12542d7212e1703d697867d4a470de4722416041d2006e2655a1f
+updated: 2018-07-24T23:01:44.476609+02:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
-  version: 5669a59bb223f3afeace7a8f8d1cf4ec938daba1
+  version: 9efb9b6c2bb898b8123da56621272b27c84cea69
 - name: github.com/jaytaylor/html2text
-  version: 190166da35878a77103b951ae035a473531c1fc2
+  version: 57d518f124b0cf46ea2021f25a01396b3522e6fb
 - name: github.com/k3a/html2text
-  version: ab70b34187c4604d303fa56569efef07cb7753e6
+  version: 7531bf9beb40abbf0822b2f32401d05d470fe671
+- name: github.com/nicksnyder/go-i18n
+  version: 9a3374df1846e50f1b710416ff73b5f48e224bb6
+  subpackages:
+  - v2/goi18n
+  - v2/i18n
+  - v2/internal
+  - v2/internal/plural
 - name: github.com/onsi/ginkgo
   version: 6665a7cf0a58963034f099ffcd3bc4e4a11c300c
   subpackages:
@@ -43,7 +50,7 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/patrickmn/go-cache
-  version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
+  version: 9f6ff22cfff829561052f5886ec80a2ac148b4eb
 - name: github.com/petergtz/go-alexa
   version: f2fe0b6105af830c065d1fb976443a3c1a5d4053
 - name: github.com/pkg/errors
@@ -62,19 +69,8 @@ imports:
   - internal/color
   - internal/exit
   - zapcore
-testImports:
-- name: golang.org/x/net
-  version: 1f9224279e98554b6a6432d4dd998a739f8b2b7c
-  subpackages:
-  - html
-  - html/atom
-  - html/charset
-- name: golang.org/x/sys
-  version: 90796e5a05ce440b41c768bd9af257005e470461
-  subpackages:
-  - unix
 - name: golang.org/x/text
-  version: 8c34f848e18c4bd34d02db7f19a0ed1a0a8f5852
+  version: 5cec4b58c438bd98288aeb248bab2c1840713d21
   subpackages:
   - encoding
   - encoding/charmap
@@ -93,5 +89,16 @@ testImports:
   - language
   - runes
   - transform
+testImports:
+- name: golang.org/x/net
+  version: 1f9224279e98554b6a6432d4dd998a739f8b2b7c
+  subpackages:
+  - html
+  - html/atom
+  - html/charset
+- name: golang.org/x/sys
+  version: 90796e5a05ce440b41c768bd9af257005e470461
+  subpackages:
+  - unix
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
