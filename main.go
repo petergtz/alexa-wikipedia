@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"go.uber.org/zap"
+	"golang.org/x/text/language"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 	"github.com/petergtz/go-alexa"
@@ -23,9 +25,12 @@ func main() {
 	defer l.Sync()
 	log = l.Sugar()
 
+	i18nBundle := &i18n.Bundle{DefaultLanguage: language.English}
+	i18nBundle.MustLoadMessageFile("active.en.toml")
 	handler := &alexa.Handler{
 		Skill: &WikipediaSkill{
-			wiki: &mediawiki.MediaWiki{},
+			i18nBundle: i18nBundle,
+			wiki:       &mediawiki.MediaWiki{},
 		},
 		Log: log,
 		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
@@ -43,7 +48,8 @@ func main() {
 }
 
 type WikipediaSkill struct {
-	wiki wiki.Wiki
+	wiki       wiki.Wiki
+	i18nBundle *i18n.Bundle
 }
 
 const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
@@ -56,13 +62,19 @@ const quickHelpText = "Suche zunächst nach einem Begriff. " +
 
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
 	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
-		"SessionAttributes", requestEnv.Session.Attributes)
+		"SessionAttributes", requestEnv.Session.Attributes, "locale", requestEnv.Request.Locale)
+
+	localizer := i18n.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale)
+
 	switch requestEnv.Request.Type {
 
 	case "LaunchRequest":
 		return &alexa.ResponseEnvelope{Version: "1.0",
 			Response: &alexa.Response{
-				OutputSpeech: plainText("Du befindest Dich jetzt bei Wikipedia. " + helpText),
+				OutputSpeech: plainText(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+					ID:    "YouAreAtWikipediaNow",
+					Other: "Du befindest Dich jetzt bei Wikipedia. ",
+				}}) + helpText),
 			},
 			SessionAttributes: map[string]interface{}{
 				"last_question": "none",
