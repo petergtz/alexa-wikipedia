@@ -1,5 +1,5 @@
-hash: 501f756e6ed12542d7212e1703d697867d4a470de4722416041d2006e2655a1f
-updated: 2018-07-24T23:01:44.476609+02:00
+hash: 5c1d43bf93ddbcf44f22a25e8555b322c4d8284f14d7cb9073fb29b7ea61eec9
+updated: 2018-07-24T23:06:55.212274+02:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
   version: 9efb9b6c2bb898b8123da56621272b27c84cea69
@@ -39,6 +39,10 @@ imports:
   version: f9b2e15b86f3d6dd556700ffbaa4feee86745028
   subpackages:
   - format
+  - gbytes
+  - gexec
+  - gstruct
+  - gstruct/errors
   - internal/assertion
   - internal/asyncassertion
   - internal/oraclematcher
