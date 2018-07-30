@@ -1,5 +1,5 @@
 hash: 5c1d43bf93ddbcf44f22a25e8555b322c4d8284f14d7cb9073fb29b7ea61eec9
-updated: 2018-07-24T23:06:55.212274+02:00
+updated: 2018-07-30T22:47:05.266857+02:00
 imports:
 - name: github.com/ericdaugherty/alexa-skills-kit-golang
   version: 9efb9b6c2bb898b8123da56621272b27c84cea69
@@ -8,14 +8,14 @@ imports:
 - name: github.com/k3a/html2text
   version: 7531bf9beb40abbf0822b2f32401d05d470fe671
 - name: github.com/nicksnyder/go-i18n
-  version: 9a3374df1846e50f1b710416ff73b5f48e224bb6
+  version: 461e8b98df7454b4cb46a1611a6734f05ee331d0
   subpackages:
   - v2/goi18n
   - v2/i18n
   - v2/internal
   - v2/internal/plural
 - name: github.com/onsi/ginkgo
-  version: 6665a7cf0a58963034f099ffcd3bc4e4a11c300c
+  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
   subpackages:
   - config
   - ginkgo
@@ -36,13 +36,11 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: f9b2e15b86f3d6dd556700ffbaa4feee86745028
+  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
   subpackages:
   - format
   - gbytes
   - gexec
-  - gstruct
-  - gstruct/errors
   - internal/assertion
   - internal/asyncassertion
   - internal/oraclematcher
@@ -56,9 +54,9 @@ imports:
 - name: github.com/patrickmn/go-cache
   version: 9f6ff22cfff829561052f5886ec80a2ac148b4eb
 - name: github.com/petergtz/go-alexa
-  version: f2fe0b6105af830c065d1fb976443a3c1a5d4053
+  version: d2be3dc8503deea35952946e033ed695fedf5cdd
 - name: github.com/pkg/errors
-  version: c605e284fe17294bda444b34710735b29d1a9d90
+  version: 816c9085562cd7ee03e7f8188a1cfd942858cded
 - name: github.com/pkg/math
   version: f2ed9e40e245cdeec72c4b642d27ed4553f90667
 - name: go.uber.org/atomic
@@ -66,7 +64,7 @@ imports:
 - name: go.uber.org/multierr
   version: 3c4937480c32f4c13a875a1829af76c98ca3d40a
 - name: go.uber.org/zap
-  version: e15639dab1b6ca5a651fe7ebfd8d682683b7d6a8
+  version: 55d3c264ce04be1d1aeac671f981697d0589b7c0
   subpackages:
   - buffer
   - internal/bufferpool
@@ -74,7 +72,7 @@ imports:
   - internal/exit
   - zapcore
 - name: golang.org/x/text
-  version: 5cec4b58c438bd98288aeb248bab2c1840713d21
+  version: 0605a8320aceb4207a5fb3521281e17ec2075476
   subpackages:
   - encoding
   - encoding/charmap
@@ -94,15 +92,26 @@ imports:
   - runes
   - transform
 testImports:
+- name: github.com/hpcloud/tail
+  version: a1dbeea552b7c8df4b542c66073e393de198a800
+  subpackages:
+  - ratelimiter
+  - util
+  - watch
+  - winfile
 - name: golang.org/x/net
-  version: 1f9224279e98554b6a6432d4dd998a739f8b2b7c
+  version: c4299a1a0d8524c11563db160fbf9bddbceadb21
   subpackages:
   - html
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: 90796e5a05ce440b41c768bd9af257005e470461
+  version: bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e
   subpackages:
   - unix
+- name: gopkg.in/fsnotify/fsnotify.v1
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+- name: gopkg.in/tomb.v1
+  version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
 - name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
