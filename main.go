@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"go.uber.org/zap"
 	"golang.org/x/text/language"
@@ -18,10 +20,7 @@ var (
 )
 
 func main() {
-	l, e := zap.NewDevelopment()
-	if e != nil {
-		panic(e)
-	}
+	l := createLoggerWith("debug")
 	defer l.Sync()
 	log = l.Sugar()
 
@@ -258,6 +257,35 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 
 	default:
 		return &alexa.ResponseEnvelope{Version: "1.0"}
+	}
+}
+
+func createLoggerWith(logLevel string) *zap.Logger {
+	loggerConfig := zap.NewProductionConfig()
+	loggerConfig.Level = zapLogLevelFrom(logLevel)
+	loggerConfig.DisableStacktrace = true
+	logger, e := loggerConfig.Build()
+	if e != nil {
+		log.Panic(e)
+	}
+	return logger
+}
+
+func zapLogLevelFrom(configLogLevel string) zap.AtomicLevel {
+	switch strings.ToLower(configLogLevel) {
+	case "", "debug":
+		return zap.NewAtomicLevelAt(zap.DebugLevel)
+	case "info":
+		return zap.NewAtomicLevelAt(zap.InfoLevel)
+	case "warn":
+		return zap.NewAtomicLevelAt(zap.WarnLevel)
+	case "error":
+		return zap.NewAtomicLevelAt(zap.ErrorLevel)
+	case "fatal":
+		return zap.NewAtomicLevelAt(zap.FatalLevel)
+	default:
+		log.Fatal("Invalid log level in config", "log-level", configLogLevel)
+		return zap.NewAtomicLevelAt(-1)
 	}
 }
 
