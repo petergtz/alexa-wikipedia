@@ -25,7 +25,24 @@ func main() {
 	log = l.Sugar()
 
 	i18nBundle := &i18n.Bundle{DefaultLanguage: language.English}
-	i18nBundle.MustLoadMessageFile("active.en.toml")
+	// i18nBundle.MustLoadMessageFile("active.en.toml")
+
+	var e error
+	skipRequestValidation := false
+	if os.Getenv("SKILL_SKIP_REQUEST_VALIDATION") != "" {
+		skipRequestValidation, e = strconv.ParseBool(os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
+		if e != nil {
+			log.Fatalw("Invalid env var SKILL_SKIP_REQUEST_VALIDATION", "value", os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
+		}
+		if skipRequestValidation {
+			log.Info("Skipping request validation. THIS SHOULD ONLY BE USED IN TESTING")
+		}
+	}
+
+	if os.Getenv("APPLICATION_ID") == "" {
+		log.Fatal("env var APPLICATION_ID not provided.")
+	}
+
 	handler := &alexa.Handler{
 		Skill: &WikipediaSkill{
 			i18nBundle: i18nBundle,
@@ -33,15 +50,26 @@ func main() {
 		},
 		Log: log,
 		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
+		SkipRequestValidation: skipRequestValidation,
 	}
 	http.HandleFunc("/", handler.Handle)
 	port := os.Getenv("PORT")
-	if port == "" { // the port variable lets us distinguish between a local server an done in CF
-		log.Debugf("Certificate path: %v", os.Getenv("cert"))
-		log.Debugf("Private key path: %v", os.Getenv("key"))
-		e = http.ListenAndServeTLS("0.0.0.0:4443", os.Getenv("cert"), os.Getenv("key"), nil)
+	if port == "" {
+		log.Fatal("No env variable PORT specified")
+	}
+	addr := os.Getenv("SKILL_ADDR")
+	if addr == "" {
+		addr = "0.0.0.0"
+		log.Infow("No SKILL_ADDR provided. Using default.", "addr", addr)
 	} else {
-		e = http.ListenAndServe("0.0.0.0:"+port, nil)
+		log.Infow("SKILL_ADDR provided.", "addr", addr)
+	}
+	if os.Getenv("SKILL_USE_TLS") == "true" {
+		log.Infof("Certificate path: %v", os.Getenv("CERT"))
+		log.Infof("Private key path: %v", os.Getenv("KEY"))
+		e = http.ListenAndServeTLS(addr+":"+port, os.Getenv("CERT"), os.Getenv("KEY"), nil)
+	} else {
+		e = http.ListenAndServe(addr+":"+port, nil)
 	}
 	log.Fatal(e)
 }
