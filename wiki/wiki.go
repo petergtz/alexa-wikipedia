@@ -3,6 +3,8 @@ package wiki
 import (
 	"fmt"
 	"strings"
+
+	"github.com/petergtz/alexa-wikipedia/locale"
 )
 
 type Page Section
@@ -12,11 +14,12 @@ type Section struct {
 	Title       string
 	Body        string
 	Subsections []Section
+	// Locale      string
 }
 
 type Wiki interface {
-	GetPage(url string) (Page, error)
-	SearchPage(url string) (Page, error)
+	GetPage(url string, localizer *locale.Localizer) (Page, error)
+	SearchPage(url string, localizer *locale.Localizer) (Page, error)
 }
 
 func (p Page) TextForPosition(position int) string {
@@ -45,17 +48,11 @@ func traverse(s Section, cur int, target int, prefix string) (text string, new_c
 	return "", cur
 }
 
-var numbers = []string{"null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn", "zwanzig"}
-
-func (p Page) TextAndPositionFromSectionNumber(sectionNumber string) (text string, position int) {
-	return traverse2(Section(p), 0, 1, 0, sectionNumber, "")
+func (p Page) TextAndPositionFromSectionNumber(sectionNumber string, localizer *locale.Localizer) (text string, position int) {
+	return traverse2(Section(p), 0, 1, 0, sectionNumber, "", localizer)
 }
 
-func Convert(i int) string {
-	return numbers[i]
-}
-
-func textFor(section Section) string {
+func textFor(section Section, localizer *locale.Localizer) string {
 	s := "Abschnitt " + section.Number + ". " + section.Title + ". " + section.Body
 	for section.Body == "" && len(section.Subsections) > 0 {
 		s += "Abschnitt " + section.Subsections[0].Number + ". " + section.Subsections[0].Title + ". " + section.Subsections[0].Body
@@ -64,26 +61,26 @@ func textFor(section Section) string {
 	return s
 }
 
-func traverse2(s Section, level int, index int, cur int, sectionNumber string, prefix string) (text string, new_cur int) {
+func traverse2(s Section, level int, index int, cur int, sectionNumber string, prefix string, localizer *locale.Localizer) (text string, new_cur int) {
 	var currentSectionNumber string
 	switch level {
 	case 0:
 		currentSectionNumber = ""
 	case 1:
-		currentSectionNumber = Convert(index)
+		currentSectionNumber = localizer.Spell(index)
 	default:
-		currentSectionNumber = prefix + " punkt " + Convert(index)
+		currentSectionNumber = prefix + " punkt " + localizer.Spell(index)
 	}
 
 	if sectionNumber == currentSectionNumber {
-		return textFor(s), cur
+		return textFor(s, localizer), cur
 	}
 	if s.Body != "" {
 		cur++
 	}
 	for i, section := range s.Subsections {
 		var ss string
-		ss, cur = traverse2(section, level+1, i+1, cur, sectionNumber, currentSectionNumber)
+		ss, cur = traverse2(section, level+1, i+1, cur, sectionNumber, currentSectionNumber, localizer)
 		if ss != "" {
 			return ss, cur
 		}
@@ -91,20 +88,20 @@ func traverse2(s Section, level int, index int, cur int, sectionNumber string, p
 	return "", cur
 }
 
-func (p Page) TextAndPositionFromSectionName(sectionName string) (text string, position int) {
-	return traverse3(Section(p), 0, 1, 0, sectionName)
+func (p Page) TextAndPositionFromSectionName(sectionName string, localizer *locale.Localizer) (text string, position int) {
+	return traverse3(Section(p), 0, 1, 0, sectionName, localizer)
 }
 
-func traverse3(s Section, level int, index int, cur int, sectionName string) (text string, new_cur int) {
+func traverse3(s Section, level int, index int, cur int, sectionName string, localizer *locale.Localizer) (text string, new_cur int) {
 	if strings.ToLower(sectionName) == strings.ToLower(s.Title) {
-		return textFor(s), cur
+		return textFor(s, localizer), cur
 	}
 	if s.Body != "" {
 		cur++
 	}
 	for i, section := range s.Subsections {
 		var ss string
-		ss, cur = traverse3(section, level+1, i+1, cur, sectionName)
+		ss, cur = traverse3(section, level+1, i+1, cur, sectionName, localizer)
 		if ss != "" {
 			return ss, cur
 		}

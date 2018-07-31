@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+
+	"github.com/petergtz/alexa-wikipedia/locale"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
@@ -11,26 +15,29 @@ import (
 )
 
 var _ = Describe("Mediawiki", func() {
+	var localizer *locale.Localizer
+	BeforeEach(func() { localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE") })
+
 	It("returns the page even when it's not an exact match", func() {
-		page, e := (&mediawiki.MediaWiki{}).SearchPage("Der Baum")
+		page, e := (&mediawiki.MediaWiki{}).SearchPage("Der Baum", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Baum"))
 	})
 
 	It("returns the page when it finds it", func() {
-		page, e := (&mediawiki.MediaWiki{}).GetPage("Baum")
+		page, e := (&mediawiki.MediaWiki{}).GetPage("Baum", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Baum"))
 	})
 
 	It("returns an error when it cannot find the page", func() {
-		_, e := (&mediawiki.MediaWiki{}).GetPage("NotExistingWikiPage")
+		_, e := (&mediawiki.MediaWiki{}).GetPage("NotExistingWikiPage", localizer)
 		Expect(e).To(HaveOccurred())
 		Expect(e.Error()).To(Equal("Page not found on Wikipedia"))
 	})
 
 	It("properly escapes wearch words", func() {
-		page, e := (&mediawiki.MediaWiki{}).GetPage("Albert Einstein")
+		page, e := (&mediawiki.MediaWiki{}).GetPage("Albert Einstein", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Albert Einstein"))
 	})
@@ -39,7 +46,7 @@ var _ = Describe("Mediawiki", func() {
 		It("works", func() {
 			text, e := ioutil.ReadFile("testdata/extract-baum.wiki.txt")
 			Expect(e).NotTo(HaveOccurred())
-			page := mediawiki.WikiPageFrom(mediawiki.Page{Extract: string(text), Title: "Baum"})
+			page := mediawiki.WikiPageFrom(mediawiki.Page{Extract: string(text), Title: "Baum"}, localizer)
 
 			Expect(page.Title).To(Equal("Baum"))
 			Expect(page.Body).To(Equal("Als Baum wird im allgemeinen Sprachgebrauch eine verholzte Pflanze verstanden, die aus einer Wurzel, einem daraus emporsteigenden, hochgewachsenen Stamm und einer belaubten Krone besteht."))

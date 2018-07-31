@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/petergtz/alexa-wikipedia/locale"
+
 	"go.uber.org/zap"
 	"golang.org/x/text/language"
 
@@ -91,17 +93,21 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
 		"SessionAttributes", requestEnv.Session.Attributes, "locale", requestEnv.Request.Locale)
 
-	localizer := i18n.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale)
+	localizer := locale.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale)
 
 	switch requestEnv.Request.Type {
 
 	case "LaunchRequest":
 		return &alexa.ResponseEnvelope{Version: "1.0",
 			Response: &alexa.Response{
-				OutputSpeech: plainText(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
-					ID:    "YouAreAtWikipediaNow",
-					Other: "Du befindest Dich jetzt bei Wikipedia. ",
-				}}) + helpText),
+				OutputSpeech: plainText(
+					localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "YouAreAtWikipediaNow",
+						Other: "Du befindest Dich jetzt bei Wikipedia.",
+					}}) + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "HelpText",
+						Other: helpText,
+					}})),
 			},
 			SessionAttributes: map[string]interface{}{
 				"last_question": "none",
@@ -113,15 +119,20 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		switch intent.Name {
 		case "DefineIntent":
 			var definition string
-			page, e := h.wiki.GetPage(intent.Slots["word"].Value)
+			page, e := h.wiki.GetPage(intent.Slots["word"].Value, localizer)
 			switch {
 			case isNotFoundError(e):
-				page, e = h.wiki.SearchPage(intent.Slots["word"].Value)
+				page, e = h.wiki.SearchPage(intent.Slots["word"].Value, localizer)
 				switch {
 				case isNotFoundError(e):
 					return &alexa.ResponseEnvelope{Version: "1.0",
 						Response: &alexa.Response{
-							OutputSpeech: plainText("Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."),
+							OutputSpeech: plainText(
+								localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+									ID:    "CouldNotFindExpression",
+									Other: "Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff.",
+								}}),
+							),
 						},
 					}
 				case e != nil:
@@ -138,10 +149,12 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(definition +
-						" Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
-						" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
-						"Soll ich zunächst einfach weiterlesen?"),
+					OutputSpeech: plainText(definition + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID: "FurtherNavigationHints",
+						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
+							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
+							"Soll ich zunächst einfach weiterlesen?",
+					}})),
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":          intent.Slots["word"].Value,
@@ -152,19 +165,25 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		case "AMAZON.YesIntent", "AMAZON.ResumeIntent":
 			if lastQuestionIn(requestEnv.Session) != "should_continue" {
 				return &alexa.ResponseEnvelope{Version: "1.0",
-					Response:          &alexa.Response{OutputSpeech: plainText("Wie meinen?")},
+					Response: &alexa.Response{OutputSpeech: plainText(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "What",
+						Other: "Wie meinen?",
+					}}))},
 					SessionAttributes: requestEnv.Session.Attributes,
 				}
 			}
-			page, resp := h.pageFromSession(requestEnv.Session)
+			page, resp := h.pageFromSession(requestEnv.Session, localizer)
 			if resp != nil {
 				return resp
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.TextForPosition(newPosition) +
-						" Soll ich noch weiterlesen?"),
+					OutputSpeech: plainText(page.TextForPosition(newPosition) + " " +
+						localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+							ID:    "ShouldIContinue",
+							Other: "Soll ich noch weiterlesen?",
+						}})),
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":          requestEnv.Session.Attributes["word"],
@@ -173,7 +192,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 			}
 		case "AMAZON.RepeatIntent":
-			page, resp := h.pageFromSession(requestEnv.Session)
+			page, resp := h.pageFromSession(requestEnv.Session, localizer)
 			if resp != nil {
 				return resp
 			}
@@ -190,15 +209,18 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 			}
 		case "AMAZON.NextIntent":
-			page, resp := h.pageFromSession(requestEnv.Session)
+			page, resp := h.pageFromSession(requestEnv.Session, localizer)
 			if resp != nil {
 				return resp
 			}
 			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.TextForPosition(newPosition) +
-						" Soll ich noch weiterlesen?"),
+					OutputSpeech: plainText(page.TextForPosition(newPosition) + " " +
+						localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+							ID:    "ShouldIContinue",
+							Other: "Soll ich noch weiterlesen?",
+						}})),
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":          requestEnv.Session.Attributes["word"],
@@ -209,14 +231,20 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		case "AMAZON.NoIntent":
 			if lastQuestionIn(requestEnv.Session) != "should_continue" {
 				return &alexa.ResponseEnvelope{Version: "1.0",
-					Response:          &alexa.Response{OutputSpeech: plainText("Wie meinen?")},
+					Response: &alexa.Response{OutputSpeech: plainText(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "What",
+						Other: "Wie meinen?",
+					}}))},
 					SessionAttributes: requestEnv.Session.Attributes,
 				}
 			}
 			delete(requestEnv.Session.Attributes, "last_question")
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech:     plainText("Nein? Okay."),
+					OutputSpeech: plainText(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "No?Okay",
+						Other: "Nein? Okay.",
+					}})),
 					ShouldSessionEnd: true,
 				},
 				SessionAttributes: requestEnv.Session.Attributes,
@@ -228,26 +256,29 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "TocIntent":
-			page, resp := h.pageFromSession(requestEnv.Session)
+			page, resp := h.pageFromSession(requestEnv.Session, localizer)
 			if resp != nil {
 				return resp
 			}
 			requestEnv.Session.Attributes["last_question"] = "jump_where"
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.Toc() + " Zu welchem Abschnitt möchtest Du springen?"),
+					OutputSpeech: plainText(page.Toc() + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "WhichSectionToJump",
+						Other: "Zu welchem Abschnitt möchtest Du springen?",
+					}})),
 				},
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "GoToSectionIntent":
-			page, resp := h.pageFromSession(requestEnv.Session)
+			page, resp := h.pageFromSession(requestEnv.Session, localizer)
 			if resp != nil {
 				return resp
 			}
 			sectionTitleOrNumber := intent.Slots["section_title_or_number"].Value
-			s, position := page.TextAndPositionFromSectionNumber(sectionTitleOrNumber)
+			s, position := page.TextAndPositionFromSectionNumber(sectionTitleOrNumber, localizer)
 			if s == "" {
-				s, position = page.TextAndPositionFromSectionName(sectionTitleOrNumber)
+				s, position = page.TextAndPositionFromSectionName(sectionTitleOrNumber, localizer)
 			}
 			lastQuestion := ""
 			if s != "" {
@@ -328,15 +359,15 @@ func lastQuestionIn(session *alexa.Session) string {
 	return session.Attributes["last_question"].(string)
 }
 
-func (h *WikipediaSkill) pageFromSession(session *alexa.Session) (wiki.Page, *alexa.ResponseEnvelope) {
+func (h *WikipediaSkill) pageFromSession(session *alexa.Session, localizer *locale.Localizer) (wiki.Page, *alexa.ResponseEnvelope) {
 	if !wordIn(session) {
 		return wiki.Page{}, quickHelp(session.Attributes)
 	}
 
-	page, e := h.wiki.GetPage(session.Attributes["word"].(string))
+	page, e := h.wiki.GetPage(session.Attributes["word"].(string), localizer)
 	switch {
 	case isNotFoundError(e):
-		page, e = h.wiki.SearchPage(session.Attributes["word"].(string))
+		page, e = h.wiki.SearchPage(session.Attributes["word"].(string), localizer)
 		switch {
 		case isNotFoundError(e):
 			return wiki.Page{}, &alexa.ResponseEnvelope{Version: "1.0",
