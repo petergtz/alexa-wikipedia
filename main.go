@@ -200,7 +200,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
 					OutputSpeech: plainText(page.TextForPosition(newPosition) +
-						" Soll ich noch weiterlesen?"),
+						" " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "ShouldIContinue",
+						Other: "Soll ich noch weiterlesen?",
+					}})),
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":          requestEnv.Session.Attributes["word"],
