@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/locale"
 )
 
@@ -53,9 +54,13 @@ func (p Page) TextAndPositionFromSectionNumber(sectionNumber string, localizer *
 }
 
 func textFor(section Section, localizer *locale.Localizer) string {
-	s := "Abschnitt " + section.Number + ". " + section.Title + ". " + section.Body
+	s := localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+		ID: "Section", Other: "Abschnitt",
+	}}) + " " + section.Number + ". " + section.Title + ". " + section.Body
 	for section.Body == "" && len(section.Subsections) > 0 {
-		s += "Abschnitt " + section.Subsections[0].Number + ". " + section.Subsections[0].Title + ". " + section.Subsections[0].Body
+		s += localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+			ID: "Section", Other: "Abschnitt",
+		}}) + " " + section.Subsections[0].Number + ". " + section.Subsections[0].Title + ". " + section.Subsections[0].Body
 		section = section.Subsections[0]
 	}
 	return s
@@ -69,7 +74,9 @@ func traverse2(s Section, level int, index int, cur int, sectionNumber string, p
 	case 1:
 		currentSectionNumber = localizer.Spell(index)
 	default:
-		currentSectionNumber = prefix + " punkt " + localizer.Spell(index)
+		currentSectionNumber = prefix + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+			ID: "Point", Other: "punkt",
+		}}) + " " + localizer.Spell(index)
 	}
 
 	if sectionNumber == currentSectionNumber {
@@ -109,10 +116,14 @@ func traverse3(s Section, level int, index int, cur int, sectionName string, loc
 	return "", cur
 }
 
-func (p Page) Toc() string {
-	s := "Inhaltsverzeichnis. "
+func (p Page) Toc(localizer *locale.Localizer) string {
+	s := localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+		ID: "TableOfContents", Other: "Inhaltsverzeichnis",
+	}}) + ". "
 	for i, section := range p.Subsections {
-		s += fmt.Sprintf("Abschnitt %v: %v.\n", i+1, section.Title)
+		s += fmt.Sprintf(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+			ID: "Section", Other: "Abschnitt",
+		}})+" %v: %v.\n", i+1, section.Title)
 	}
 	return s
 }

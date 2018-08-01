@@ -263,7 +263,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			requestEnv.Session.Attributes["last_question"] = "jump_where"
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.Toc() + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+					OutputSpeech: plainText(page.Toc(localizer) + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
 						ID:    "WhichSectionToJump",
 						Other: "Zu welchem Abschnitt möchtest Du springen?",
 					}})),
@@ -282,10 +282,19 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}
 			lastQuestion := ""
 			if s != "" {
-				s += "Soll ich noch weiterlesen?"
+				s += localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+					ID:    "ShouldIContinue",
+					Other: "Soll ich noch weiterlesen?",
+				}})
 				lastQuestion = "should_continue"
 			} else {
-				s = "Ich konnte den angegebenen Abschnitt \"" + sectionTitleOrNumber + "\" nicht finden."
+				s = localizer.MustLocalize(&i18n.LocalizeConfig{
+					DefaultMessage: &i18n.Message{
+						ID:    "CouldNotFindSection",
+						Other: "Ich konnte den angegebenen Abschnitt \"{{.SectionTitleOrNumber}}\" nicht finden.",
+					},
+					TemplateData: map[string]string{"SectionTitleOrNumber": sectionTitleOrNumber},
+				})
 				position = int(requestEnv.Session.Attributes["position"].(float64))
 				lastQuestion = "none"
 			}
@@ -300,7 +309,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		case "AMAZON.HelpIntent":
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(helpText),
+					OutputSpeech: plainText(localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+						ID:    "HelpText",
+						Other: helpText,
+					}})),
 				},
 			}
 		case "AMAZON.CancelIntent", "AMAZON.StopIntent":
