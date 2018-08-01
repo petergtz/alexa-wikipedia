@@ -282,7 +282,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}
 			lastQuestion := ""
 			if s != "" {
-				s += localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+				s += " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
 					ID:    "ShouldIContinue",
 					Other: "Soll ich noch weiterlesen?",
 				}})
