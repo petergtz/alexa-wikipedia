@@ -1,0 +1,92 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "my encyclopedia",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "DefineIntent",
+                    "slots": [
+                        {
+                            "name": "word",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "to define the expression {word}",
+                        "to define {word}",
+                        "what is the meaning of {word}",
+                        "define the word {word}",
+                        "define {word}",
+                        "what is {word}",
+                        "for the expression {word}",
+                        "for the word {word}",
+                        "for the definition of {word}",
+                        "search for {word}",
+                        "for {word}",
+                        "what is the definition of {word}"
+                    ]
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                },
+                {
+                    "name": "TocIntent",
+                    "slots": [],
+                    "samples": [
+                        "table of contents"
+                    ]
+                },
+                {
+                    "name": "AMAZON.RepeatIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GoToSectionIntent",
+                    "slots": [
+                        {
+                            "name": "section_title_or_number",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "section {section_title_or_number}",
+                        "go to {section_title_or_number}",
+                        "go to section {section_title_or_number}"
+                    ]
+                },
+                {
+                    "name": "AMAZON.ResumeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NextIntent",
+                    "samples": [
+                        "next section"
+                    ]
+                },
+                {
+                    "name": "AMAZON.PauseIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
+                }
+            ],
+            "types": []
+        }
+    }
+}
