@@ -16,3 +16,4 @@ import:
 - package: github.com/nicksnyder/go-i18n
   subpackages:
   - v2/goi18n
+- package: github.com/BurntSushi/toml
