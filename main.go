@@ -1,14 +1,19 @@
 package main
 
 import (
+	"bytes"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/petergtz/alexa-wikipedia/locale"
+	"time"
 
 	"go.uber.org/zap"
+
+	"github.com/BurntSushi/toml"
+	"github.com/petergtz/alexa-wikipedia/locale"
+
 	"golang.org/x/text/language"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -18,31 +23,34 @@ import (
 )
 
 var (
-	log *zap.SugaredLogger
+	logger *zap.SugaredLogger
 )
 
 func main() {
 	l := createLoggerWith("debug")
 	defer l.Sync()
-	log = l.Sugar()
+	logger = l.Sugar()
 
 	i18nBundle := &i18n.Bundle{DefaultLanguage: language.English}
-	// i18nBundle.MustLoadMessageFile("active.en.toml")
+	i18nBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+
+	i18nBundle.MustParseMessageFileBytes(locale.DeDe, "active.de.toml")
+	i18nBundle.MustParseMessageFileBytes(locale.EnUs, "active.en.toml")
 
 	var e error
 	skipRequestValidation := false
 	if os.Getenv("SKILL_SKIP_REQUEST_VALIDATION") != "" {
 		skipRequestValidation, e = strconv.ParseBool(os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
 		if e != nil {
-			log.Fatalw("Invalid env var SKILL_SKIP_REQUEST_VALIDATION", "value", os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
+			logger.Fatalw("Invalid env var SKILL_SKIP_REQUEST_VALIDATION", "value", os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
 		}
 		if skipRequestValidation {
-			log.Info("Skipping request validation. THIS SHOULD ONLY BE USED IN TESTING")
+			logger.Info("Skipping request validation. THIS SHOULD ONLY BE USED IN TESTING")
 		}
 	}
 
 	if os.Getenv("APPLICATION_ID") == "" {
-		log.Fatal("env var APPLICATION_ID not provided.")
+		logger.Fatal("env var APPLICATION_ID not provided.")
 	}
 
 	handler := &alexa.Handler{
@@ -50,30 +58,41 @@ func main() {
 			i18nBundle: i18nBundle,
 			wiki:       &mediawiki.MediaWiki{},
 		},
-		Log: log,
+		Log: logger,
 		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
 		SkipRequestValidation: skipRequestValidation,
 	}
-	http.HandleFunc("/", handler.Handle)
+	serveMux := http.NewServeMux()
+	serveMux.HandleFunc("/", handler.Handle)
+
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatal("No env variable PORT specified")
+		logger.Fatal("No env variable PORT specified")
 	}
 	addr := os.Getenv("SKILL_ADDR")
 	if addr == "" {
 		addr = "0.0.0.0"
-		log.Infow("No SKILL_ADDR provided. Using default.", "addr", addr)
+		logger.Infow("No SKILL_ADDR provided. Using default.", "addr", addr)
 	} else {
-		log.Infow("SKILL_ADDR provided.", "addr", addr)
+		logger.Infow("SKILL_ADDR provided.", "addr", addr)
 	}
+
+	httpServer := &http.Server{
+		Handler:      serveMux,
+		Addr:         addr + ":" + port,
+		WriteTimeout: 60 * time.Minute,
+		ReadTimeout:  60 * time.Minute,
+		ErrorLog:     NewStdLog(l),
+	}
+
 	if os.Getenv("SKILL_USE_TLS") == "true" {
-		log.Infof("Certificate path: %v", os.Getenv("CERT"))
-		log.Infof("Private key path: %v", os.Getenv("KEY"))
-		e = http.ListenAndServeTLS(addr+":"+port, os.Getenv("CERT"), os.Getenv("KEY"), nil)
+		logger.Infof("Certificate path: %v", os.Getenv("CERT"))
+		logger.Infof("Private key path: %v", os.Getenv("KEY"))
+		e = httpServer.ListenAndServeTLS(os.Getenv("CERT"), os.Getenv("KEY"))
 	} else {
-		e = http.ListenAndServe(addr+":"+port, nil)
+		e = httpServer.ListenAndServe()
 	}
-	log.Fatal(e)
+	logger.Fatal(e)
 }
 
 type WikipediaSkill struct {
@@ -90,10 +109,10 @@ const quickHelpText = "Suche zunächst nach einem Begriff. " +
 	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
 
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
-	log.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
+	logger.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
 		"SessionAttributes", requestEnv.Session.Attributes, "locale", requestEnv.Request.Locale)
 
-	localizer := locale.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale)
+	localizer := locale.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale, logger)
 
 	switch requestEnv.Request.Type {
 
@@ -136,13 +155,13 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 						},
 					}
 				case e != nil:
-					log.Errorw("Could not get Wikipedia page", "error", e)
+					logger.Errorw("Could not get Wikipedia page", "error", e)
 					return internalError()
 				default:
 					definition = page.Body
 				}
 			case e != nil:
-				log.Errorw("Could not get Wikipedia page", "error", e)
+				logger.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
 			default:
 				definition = page.Body
@@ -391,11 +410,11 @@ func (h *WikipediaSkill) pageFromSession(session *alexa.Session, localizer *loca
 				},
 			}
 		case e != nil:
-			log.Errorw("Could not get Wikipedia page", "error", e)
+			logger.Errorw("Could not get Wikipedia page", "error", e)
 			return wiki.Page{}, internalError()
 		}
 	case e != nil:
-		log.Errorw("Could not get Wikipedia page", "error", e)
+		logger.Errorw("Could not get Wikipedia page", "error", e)
 		return wiki.Page{}, internalError()
 	}
 	return page, nil
@@ -423,4 +442,24 @@ func internalError() *alexa.ResponseEnvelope {
 			ShouldSessionEnd: false,
 		},
 	}
+}
+
+const (
+	_stdLogDefaultDepth = 2
+	_loggerWriterDepth  = 1
+)
+
+// Copied from go.uber.org/zap/global.go and changed to use Error instead of Info:
+func NewStdLog(l *zap.Logger) *log.Logger {
+	return log.New(&loggerWriter{l.WithOptions(
+		zap.AddCallerSkip(_stdLogDefaultDepth + _loggerWriterDepth),
+	)}, "" /* prefix */, 0 /* flags */)
+}
+
+type loggerWriter struct{ logger *zap.Logger }
+
+func (l *loggerWriter) Write(p []byte) (int, error) {
+	p = bytes.TrimSpace(p)
+	l.logger.Error(string(p))
+	return len(p), nil
 }

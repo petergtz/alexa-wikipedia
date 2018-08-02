@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"go.uber.org/zap"
+
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/petergtz/alexa-wikipedia/locale"
@@ -16,7 +18,11 @@ import (
 
 var _ = Describe("Mediawiki", func() {
 	var localizer *locale.Localizer
-	BeforeEach(func() { localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE") })
+	BeforeEach(func() {
+		logger, e := zap.NewDevelopment()
+		Expect(e).NotTo(HaveOccurred())
+		localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE", logger.Sugar())
+	})
 
 	It("returns the page even when it's not an exact match", func() {
 		page, e := (&mediawiki.MediaWiki{}).SearchPage("Der Baum", localizer)

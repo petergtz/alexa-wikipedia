@@ -121,6 +121,76 @@ var _ = Describe("Skill", func() {
 				}`))
 			})
 		})
+
+		Context("locale: en-US", func() {
+			It("returns a StatusOK and an American welcome message", func() {
+				response, e := client.Post("http://127.0.0.1:4443/", "", strings.NewReader(`{
+					"version": "1.0",
+					"session": {
+					"new": true,
+					"sessionId": "xxx",
+					"application": {
+						"applicationId": "xxx"
+					},
+					"user": {
+						"userId": "xxx"
+					}
+					},
+					"context": {
+					"AudioPlayer": {
+						"playerActivity": "IDLE"
+					},
+					"Display": {
+						"token": ""
+					},
+					"System": {
+						"application": {
+						"applicationId": "xxx"
+						},
+						"user": {
+						"userId": "xxx"
+						},
+						"device": {
+						"deviceId": "xxx",
+						"supportedInterfaces": {
+							"AudioPlayer": {},
+							"Display": {
+							"templateVersion": "1.0",
+							"markupVersion": "1.0"
+							}
+						}
+						},
+						"apiEndpoint": "https://api.eu.amazonalexa.com",
+						"apiAccessToken": "xxx"
+					}
+					},
+					"request": {
+					"type": "LaunchRequest",
+					"requestId": "xxx",
+					"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
+					"locale": "en-US"
+					}
+				}`))
+				Expect(e).NotTo(HaveOccurred())
+
+				Expect(response.StatusCode).To(Equal(http.StatusOK))
+
+				Expect(ioutil.ReadAll(response.Body)).To(MatchJSON(`{
+					"version": "1.0",
+					"sessionAttributes": {
+					"last_question": "none"
+					},
+					"response": {
+					"outputSpeech": {
+						"type": "PlainText",
+						"text": "This is Wikipedia. To read an article say e.g. \"What is a cheese cake?\"."
+					},
+					"shouldEndSession": false
+					}
+				}`))
+			})
+		})
+
 	})
 
 	Describe("IntentRequest", func() {
@@ -186,6 +256,73 @@ var _ = Describe("Skill", func() {
 						"sessionAttributes": {
 							"position": 0,
 							"word": "baum",
+							"last_question": "jump_where"
+						}
+					}`))
+				})
+			})
+
+			Context("locale: en-US", func() {
+				It("reads the table of contents", func() {
+					response, e := client.Post("http://127.0.0.1:4443/", "", strings.NewReader(`{
+						"version": "1.0",
+						"session": {
+							"new": false,
+							"sessionId": "xxx",
+							"application": {
+								"applicationId": "xxx"
+							},
+							"attributes": {
+								"position": 0,
+								"word": "tree",
+								"last_question": "none"
+							},
+							"user": {
+								"userId": "xxx"
+							}
+						},
+						"context": {
+							"System": {
+								"application": {
+									"applicationId": "xxx"
+								},
+								"user": {
+									"userId": "xxx"
+								},
+								"device": {
+									"deviceId": "xxx",
+									"supportedInterfaces": {}
+								},
+								"apiEndpoint": "https://api.eu.amazonalexa.com",
+								"apiAccessToken": "xxx"
+							}
+						},
+						"request": {
+							"type": "IntentRequest",
+							"requestId": "xxx",
+							"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
+							"locale": "en-US",
+							"intent": {
+								"name": "TocIntent",
+								"confirmationStatus": "NONE"
+							}
+						}
+					}`))
+
+					Expect(e).NotTo(HaveOccurred())
+					Expect(response.StatusCode).To(Equal(http.StatusOK))
+					Expect(ioutil.ReadAll(response.Body)).To(MatchJSON(`{
+						"version": "1.0",
+						"response": {
+							"outputSpeech": {
+								"type": "PlainText",
+								"text": "Table of contents. section 1: Definition.\nsection 2: Overview.\nsection 3: Distribution.\nsection 4: Parts and function.\nsection 5: Evolutionary history.\nsection 6: Tree ecology.\nsection 7: Uses.\nsection 8: Care.\nsection 9: Mythology.\nsection 10: Superlative trees.\nsection 11: See also.\nsection 12: Notes.\nsection 13: References.\nsection 14: Further reading.\n Which section do you want to go to?"
+							},
+							"shouldEndSession": false
+						},
+						"sessionAttributes": {
+							"position": 0,
+							"word": "tree",
 							"last_question": "jump_where"
 						}
 					}`))

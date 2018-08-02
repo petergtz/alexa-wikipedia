@@ -4,13 +4,16 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"go.uber.org/zap"
 
 	"github.com/petergtz/alexa-wikipedia/locale"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
 var (
-	localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE")
+	logger, _ = zap.NewDevelopment()
+
+	localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE", logger.Sugar())
 
 	page = wiki.Page{
 		Title: "Main Title",
