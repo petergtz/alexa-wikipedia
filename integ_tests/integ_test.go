@@ -330,6 +330,152 @@ var _ = Describe("Skill", func() {
 			})
 		})
 
+		Context("DefineIntent", func() {
+			Context("locale: de-DE", func() {
+				It("reads the intro", func() {
+					response, e := client.Post("http://127.0.0.1:4443/", "", strings.NewReader(`{
+						"version": "1.0",
+						"session": {
+							"new": false,
+							"sessionId": "xxx",
+							"application": {
+								"applicationId": "xxx"
+							},
+							"attributes": {
+								"last_question": "none"
+							},
+							"user": {
+								"userId": "xxx"
+							}
+						},
+						"context": {
+							"System": {
+								"application": {
+									"applicationId": "xxx"
+								},
+								"user": {
+									"userId": "xxx"
+								},
+								"device": {
+									"deviceId": "xxx",
+									"supportedInterfaces": {}
+								},
+								"apiEndpoint": "https://api.eu.amazonalexa.com",
+								"apiAccessToken": "zzz"
+							}
+						},
+						"request": {
+							"type": "IntentRequest",
+							"requestId": "zzz",
+							"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
+							"locale": "de-DE",
+							"intent": {
+								"name": "DefineIntent",
+								"confirmationStatus": "NONE",
+								"slots": {
+									"word": {
+										"name": "word",
+										"value": "a cheese cake",
+										"confirmationStatus": "NONE"
+									}
+								}
+							}
+						}
+					}`))
+
+					Expect(e).NotTo(HaveOccurred())
+					Expect(response.StatusCode).To(Equal(http.StatusOK))
+					Expect(ioutil.ReadAll(response.Body)).To(MatchJSON(`{
+						"version": "1.0",
+						"sessionAttributes": {
+						  "last_question": "should_continue",
+						  "position": 0,
+						  "word": "a cheese cake"
+						},
+						"response": {
+						  "outputSpeech": {
+							"type": "PlainText",
+							"text": "Der Dreikönigskuchen oder Königskuchen (englisch King Cake oder King’s Cake, französisch Galette des Rois, spanisch Roscón de Reyes, portugiesisch Bolo Rei) ist ein traditionelles Festtagsgebäck, das zum 6. Januar, dem Tag der Erscheinung des Herrn (Epiphanias), dem Festtag der heiligen drei Könige gebacken wird. Mit seiner Hilfe wird der Bohnenkönig gelost. Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. Soll ich zunächst einfach weiterlesen?"
+						  },
+						  "shouldEndSession": false
+						}
+					  }`))
+				})
+			})
+
+			Context("locale: en-US", func() {
+				It("reads the intro", func() {
+					response, e := client.Post("http://127.0.0.1:4443/", "", strings.NewReader(`{
+						"version": "1.0",
+						"session": {
+							"new": false,
+							"sessionId": "xxx",
+							"application": {
+								"applicationId": "xxx"
+							},
+							"attributes": {
+								"last_question": "none"
+							},
+							"user": {
+								"userId": "xxx"
+							}
+						},
+						"context": {
+							"System": {
+								"application": {
+									"applicationId": "xxx"
+								},
+								"user": {
+									"userId": "xxx"
+								},
+								"device": {
+									"deviceId": "xxx",
+									"supportedInterfaces": {}
+								},
+								"apiEndpoint": "https://api.eu.amazonalexa.com",
+								"apiAccessToken": "zzz"
+							}
+						},
+						"request": {
+							"type": "IntentRequest",
+							"requestId": "zzz",
+							"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
+							"locale": "en-US",
+							"intent": {
+								"name": "DefineIntent",
+								"confirmationStatus": "NONE",
+								"slots": {
+									"word": {
+										"name": "word",
+										"value": "a cheese cake",
+										"confirmationStatus": "NONE"
+									}
+								}
+							}
+						}
+					}`))
+
+					Expect(e).NotTo(HaveOccurred())
+					Expect(response.StatusCode).To(Equal(http.StatusOK))
+					Expect(ioutil.ReadAll(response.Body)).To(MatchJSON(`{
+						"version": "1.0",
+						"sessionAttributes": {
+						  "last_question": "should_continue",
+						  "position": 0,
+						  "word": "a cheese cake"
+						},
+						"response": {
+						  "outputSpeech": {
+							"type": "PlainText",
+							"text": "Cheesecake is a sweet dessert consisting of one or more layers. The main, and thickest layer, consists of a mixture of soft, fresh cheese (typically cream cheese or ricotta), eggs, vanilla and sugar; if there is a bottom layer it often consists of a crust or base made from crushed cookies (or digestive biscuits), graham crackers, pastry, or sponge cake. It may be baked or unbaked (usually refrigerated). Cheesecake is usually sweetened with sugar and may be flavored or topped with fruit, whipped cream, nuts, cookies, fruit sauce, or chocolate syrup. Cheesecake can be prepared in many flavors, such as strawberry, pumpkin, key lime, lemon, chocolate, Oreo, chestnut, or toffee. For further navigation you can jump to the table of contents any time or jump to a specific section. For now, shall I simply continue reading?"
+						  },
+						  "shouldEndSession": false
+						}
+					  }`))
+				})
+			})
+		})
+
 		Context("GoToSectionIntent", func() {
 			Context("locale: de-DE", func() {
 				It("returns a StatusOK and a message with content of the section", func() {
