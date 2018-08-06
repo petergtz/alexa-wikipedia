@@ -122,11 +122,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			Response: &alexa.Response{
 				OutputSpeech: plainText(
 					l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
-						ID:    "YouAreAtWikipediaNow",
-						Other: "Du befindest Dich jetzt bei Wikipedia.",
-					}}) + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
-						ID:    "HelpText",
-						Other: helpText,
+						ID: "YouAreAtWikipediaNow",
 					}})),
 			},
 			SessionAttributes: map[string]interface{}{
