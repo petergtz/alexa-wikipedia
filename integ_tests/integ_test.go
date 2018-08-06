@@ -58,48 +58,48 @@ var _ = Describe("Skill", func() {
 				response, e := client.Post("http://127.0.0.1:4443/", "", strings.NewReader(`{
 					"version": "1.0",
 					"session": {
-					"new": true,
-					"sessionId": "xxx",
-					"application": {
-						"applicationId": "xxx"
-					},
-					"user": {
-						"userId": "xxx"
-					}
-					},
-					"context": {
-					"AudioPlayer": {
-						"playerActivity": "IDLE"
-					},
-					"Display": {
-						"token": ""
-					},
-					"System": {
+						"new": true,
+						"sessionId": "xxx",
 						"application": {
-						"applicationId": "xxx"
+							"applicationId": "xxx"
 						},
 						"user": {
-						"userId": "xxx"
-						},
-						"device": {
-						"deviceId": "xxx",
-						"supportedInterfaces": {
-							"AudioPlayer": {},
-							"Display": {
-							"templateVersion": "1.0",
-							"markupVersion": "1.0"
-							}
+							"userId": "xxx"
 						}
+					},
+					"context": {
+						"AudioPlayer": {
+							"playerActivity": "IDLE"
 						},
-						"apiEndpoint": "https://api.eu.amazonalexa.com",
-						"apiAccessToken": "xxx"
-					}
+						"Display": {
+							"token": ""
+						},
+						"System": {
+							"application": {
+								"applicationId": "xxx"
+							},
+							"user": {
+								"userId": "xxx"
+							},
+							"device": {
+								"deviceId": "xxx",
+								"supportedInterfaces": {
+									"AudioPlayer": {},
+									"Display": {
+									"templateVersion": "1.0",
+									"markupVersion": "1.0"
+									}
+								}
+							},
+							"apiEndpoint": "https://api.eu.amazonalexa.com",
+							"apiAccessToken": "xxx"
+						}
 					},
 					"request": {
-					"type": "LaunchRequest",
-					"requestId": "xxx",
-					"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
-					"locale": "de-DE"
+						"type": "LaunchRequest",
+						"requestId": "xxx",
+						"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
+						"locale": "de-DE"
 					}
 				}`))
 				Expect(e).NotTo(HaveOccurred())
@@ -109,14 +109,14 @@ var _ = Describe("Skill", func() {
 				Expect(ioutil.ReadAll(response.Body)).To(MatchJSON(`{
 					"version": "1.0",
 					"sessionAttributes": {
-					"last_question": "none"
+						"last_question": "none"
 					},
 					"response": {
-					"outputSpeech": {
-						"type": "PlainText",
-						"text": "Du befindest Dich jetzt bei Wikipedia. Um einen Artikel vorgelesen zu bekommen, sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen."
-					},
-					"shouldEndSession": false
+						"outputSpeech": {
+							"type": "PlainText",
+							"text": "Du befindest Dich jetzt bei Wikipedia. Um einen Artikel vorgelesen zu bekommen, sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen."
+						},
+						"shouldEndSession": false
 					}
 				}`))
 			})
@@ -127,48 +127,48 @@ var _ = Describe("Skill", func() {
 				response, e := client.Post("http://127.0.0.1:4443/", "", strings.NewReader(`{
 					"version": "1.0",
 					"session": {
-					"new": true,
-					"sessionId": "xxx",
-					"application": {
-						"applicationId": "xxx"
-					},
-					"user": {
-						"userId": "xxx"
-					}
-					},
-					"context": {
-					"AudioPlayer": {
-						"playerActivity": "IDLE"
-					},
-					"Display": {
-						"token": ""
-					},
-					"System": {
+						"new": true,
+						"sessionId": "xxx",
 						"application": {
-						"applicationId": "xxx"
+							"applicationId": "xxx"
 						},
 						"user": {
-						"userId": "xxx"
-						},
-						"device": {
-						"deviceId": "xxx",
-						"supportedInterfaces": {
-							"AudioPlayer": {},
-							"Display": {
-							"templateVersion": "1.0",
-							"markupVersion": "1.0"
-							}
+							"userId": "xxx"
 						}
+					},
+					"context": {
+						"AudioPlayer": {
+							"playerActivity": "IDLE"
 						},
-						"apiEndpoint": "https://api.eu.amazonalexa.com",
-						"apiAccessToken": "xxx"
-					}
+						"Display": {
+							"token": ""
+						},
+						"System": {
+							"application": {
+								"applicationId": "xxx"
+							},
+							"user": {
+								"userId": "xxx"
+							},
+							"device": {
+								"deviceId": "xxx",
+								"supportedInterfaces": {
+									"AudioPlayer": {},
+									"Display": {
+										"templateVersion": "1.0",
+										"markupVersion": "1.0"
+									}
+								}
+							},
+							"apiEndpoint": "https://api.eu.amazonalexa.com",
+							"apiAccessToken": "xxx"
+						}
 					},
 					"request": {
-					"type": "LaunchRequest",
-					"requestId": "xxx",
-					"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
-					"locale": "en-US"
+						"type": "LaunchRequest",
+						"requestId": "xxx",
+						"timestamp": "`+time.Now().UTC().Format("2006-01-02T15:04:05Z")+`",
+						"locale": "en-US"
 					}
 				}`))
 				Expect(e).NotTo(HaveOccurred())
@@ -178,14 +178,14 @@ var _ = Describe("Skill", func() {
 				Expect(ioutil.ReadAll(response.Body)).To(MatchJSON(`{
 					"version": "1.0",
 					"sessionAttributes": {
-					"last_question": "none"
+						"last_question": "none"
 					},
 					"response": {
-					"outputSpeech": {
-						"type": "PlainText",
-						"text": "This is Wikipedia. To read an article say e.g. \"What is a cheese cake?\"."
-					},
-					"shouldEndSession": false
+						"outputSpeech": {
+							"type": "PlainText",
+							"text": "This is Wikipedia. To read an article say e.g. \"What is a cheese cake?\"."
+						},
+						"shouldEndSession": false
 					}
 				}`))
 			})
