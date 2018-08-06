@@ -1,0 +1,47 @@
+{
+    "version": "1.0",
+    "session": {
+        "new": true,
+        "sessionId": "xxx",
+        "application": {
+            "applicationId": "xxx"
+        },
+        "user": {
+            "userId": "xxx"
+        }
+    },
+    "context": {
+        "AudioPlayer": {
+            "playerActivity": "IDLE"
+        },
+        "Display": {
+            "token": ""
+        },
+        "System": {
+            "application": {
+                "applicationId": "xxx"
+            },
+            "user": {
+                "userId": "xxx"
+            },
+            "device": {
+                "deviceId": "xxx",
+                "supportedInterfaces": {
+                    "AudioPlayer": {},
+                    "Display": {
+                        "templateVersion": "1.0",
+                        "markupVersion": "1.0"
+                    }
+                }
+            },
+            "apiEndpoint": "https://api.eu.amazonalexa.com",
+            "apiAccessToken": "xxx"
+        }
+    },
+    "request": {
+        "type": "LaunchRequest",
+        "requestId": "xxx",
+        "timestamp": "TIMESTAMP",
+        "locale": "en-US"
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "version": "1.0",
+    "session": {
+        "new": false,
+        "sessionId": "xxx",
+        "application": {
+            "applicationId": "xxx"
+        },
+        "attributes": {
+            "last_question": "none"
+        },
+        "user": {
+            "userId": "xxx"
+        }
+    },
+    "context": {
+        "System": {
+            "application": {
+                "applicationId": "xxx"
+            },
+            "user": {
+                "userId": "xxx"
+            },
+            "device": {
+                "deviceId": "xxx",
+                "supportedInterfaces": {}
+            },
+            "apiEndpoint": "https://api.eu.amazonalexa.com",
+            "apiAccessToken": "zzz"
+        }
+    },
+    "request": {
+        "type": "IntentRequest",
+        "requestId": "zzz",
+        "timestamp": "TIMESTAMP",
+        "locale": "de-DE",
+        "intent": {
+            "name": "DefineIntent",
+            "confirmationStatus": "NONE",
+            "slots": {
+                "word": {
+                    "name": "word",
+                    "value": "a cheese cake",
+                    "confirmationStatus": "NONE"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "sessionAttributes": {
+      "last_question": "should_continue",
+      "position": 0,
+      "word": "a cheese cake"
+    },
+    "response": {
+      "outputSpeech": {
+        "type": "PlainText",
+        "text": "Der Dreikönigskuchen oder Königskuchen (englisch King Cake oder King’s Cake, französisch Galette des Rois, spanisch Roscón de Reyes, portugiesisch Bolo Rei) ist ein traditionelles Festtagsgebäck, das zum 6. Januar, dem Tag der Erscheinung des Herrn (Epiphanias), dem Festtag der heiligen drei Könige gebacken wird. Mit seiner Hilfe wird der Bohnenkönig gelost. Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. Soll ich zunächst einfach weiterlesen?"
+      },
+      "shouldEndSession": false
+    }
+  }

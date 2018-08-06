@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "response": {
+        "outputSpeech": {
+            "type": "PlainText",
+            "text": "Abschnitt acht. Superlative. Der höchste Baum der Welt ist der „Hyperion“, ein Küstenmammutbaum (Sequoia sempervirens) im Redwood-Nationalpark in Kalifornien mit 115,5 Meter Wuchshöhe.\nDer höchste Baum Deutschlands, vielleicht sogar des Kontinents, ist die „Waldtraut vom Mühlwald“, eine 63,33 Meter (Stand: 18. August 2008) hohe Douglasie (Pseudotsuga menziesii) im  Arboretum Freiburg-Günterstal, einem Teil des Freiburger Stadtwalds.\nDer voluminöseste Baum der Welt ist angeblich der General Sherman Tree, ein Riesenmammutbaum im Sequoia National Park, Kalifornien, USA: Volumen etwa 1489 Kubikmeter, Gewicht etwa 1385 Tonnen (US), Alter rund 2500 Jahre.\nDer dickste Baum ist der „Baum von Tule“, eine Mexikanische Sumpfzypresse (Taxodium mucronatum) in Santa María del Tule im mexikanischen Staat Oaxaca. Sein Durchmesser an der dicksten Stelle beträgt 14,05 Meter.\nDie ältesten Bäume bezogen auf einen einzelnen Baumstamm sind – gemäß verbürgter Jahresringzählung – über 4800 Jahre alte Langlebige Kiefern (Pinus longaeva, früher als Varietät der Grannen-Kiefer angesehen) in den White Mountains in Kalifornien.\nDer älteste Baum bezogen auf den lebenden Organismus ist die Amerikanische Zitterpappelkolonie „Pando“ in Utah, USA, deren Alter auf mindestens 80.000 Jahre geschätzt wird. Aus den Wurzeln sprießen immer wieder neue, genetisch identische Baumstämme (vegetative Vermehrung), die etwa 100–150 Jahre alt werden.  Bei einem Individuum der Art „Huon Pine“ in Tasmanien, das mindestens 10.500 Jahre (vielleicht sogar 50.000 Jahre) alt ist, ist der älteste Baumstamm etwa 2000 Jahre alt. Die ältesten Bäume Europas stehen in der Provinz Dalarna in Schweden. 2008 wurden dort etwa 20 gemeine Fichten auf über 8000 Jahre datiert, die älteste auf 9550 Jahre. Die einzelnen Baumstämme sterben dabei nach etwa 600 Jahren ab und werden aus der Wurzel neu gebildet. \nDie winterhärtesten Bäume sind die Dahurische Lärche (Larix gmelinii) und die Ostasiatische Zwerg-Kiefer (Pinus pumila): Sie widerstehen Temperaturen bis zu −70 °C.\nDie Dahurische Lärche ist auch die Baumart, die am weitesten im Norden überleben kann: 72° 30' N, 102° 27' O.\nDie Bäume in der größten Höhe finden sich auf 4600 Meter Seehöhe am Osthimalaya in Sichuan, dort gedeiht die Schuppenrindige Tanne (Abies squamata).\nDas Holz geringster Dichte ist jenes des Balsabaumes.\nBäume, die bis dahin kahle Flächen besiedeln können, sogenannte Pionierpflanzen, sind zum Beispiel bestimmte Birken-, Weiden- und Pappelarten.\nIn der Bonsai­kunst versucht man, das Abbild eines uralten und erhabenen Baumes in klein in der Schale nachzuahmen.\nDie älteste Baumart der Erde und vermutlich das älteste lebende Fossil in der Pflanzenwelt ist der Ginkgo-Baum (Ginkgo biloba). Soll ich noch weiterlesen?"
+        },
+        "shouldEndSession": false
+    },
+    "sessionAttributes": {
+        "position": 22,
+        "word": "baum",
+        "last_question": "should_continue"
+    }
+}

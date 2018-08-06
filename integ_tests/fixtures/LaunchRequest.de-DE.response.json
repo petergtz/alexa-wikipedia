@@ -1,0 +1,13 @@
+{
+    "version": "1.0",
+    "sessionAttributes": {
+        "last_question": "none"
+    },
+    "response": {
+        "outputSpeech": {
+            "type": "PlainText",
+            "text": "Du befindest Dich jetzt bei Wikipedia. Um einen Artikel vorgelesen zu bekommen, sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen."
+        },
+        "shouldEndSession": false
+    }
+}

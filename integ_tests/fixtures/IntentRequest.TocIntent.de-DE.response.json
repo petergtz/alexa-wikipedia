@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "response": {
+        "outputSpeech": {
+            "type": "PlainText",
+            "text": "Inhaltsverzeichnis. Abschnitt 1: Etymologie.\nAbschnitt 2: Definition und taxonomische Verbreitung.\nAbschnitt 3: Die besonderen Merkmale der Bäume.\nAbschnitt 4: Entwicklung baumförmiger Pflanzen in der Erdgeschichte.\nAbschnitt 5: Physiologie.\nAbschnitt 6: Ökologie.\nAbschnitt 7: Bäume und Menschen.\nAbschnitt 8: Superlative.\nAbschnitt 9: Filmografie.\nAbschnitt 10: Literatur.\nAbschnitt 11: Weblinks.\nAbschnitt 12: Einzelnachweise.\n Zu welchem Abschnitt möchtest Du springen?"
+        },
+        "shouldEndSession": false
+    },
+    "sessionAttributes": {
+        "position": 0,
+        "word": "baum",
+        "last_question": "jump_where"
+    }
+}
