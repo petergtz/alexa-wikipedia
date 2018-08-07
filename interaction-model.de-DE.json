@@ -24,6 +24,8 @@
                         }
                     ],
                     "samples": [
+                        "wer war {word}",
+                        "wer ist {word}",
                         "den Begriff {word} zu definieren",
                         "{word} zu definieren",
                         "was bedeutet {word}",
@@ -62,6 +64,8 @@
                         }
                     ],
                     "samples": [
+                        "Springe zu {section_title_or_number}",
+                        "Springe zu Abschnitt {section_title_or_number}",
                         "Abschnitt {section_title_or_number}",
                         "Gehe zu {section_title_or_number}",
                         "Gehe zu Abschnitt {section_title_or_number}"

@@ -24,6 +24,9 @@
                         }
                     ],
                     "samples": [
+                        "who was {word}",
+                        "who is {word}",
+                        "what's {word}",
                         "to define the expression {word}",
                         "to define {word}",
                         "what is the meaning of {word}",
@@ -62,6 +65,8 @@
                         }
                     ],
                     "samples": [
+                        "jump to section {section_title_or_number}",
+                        "jump to {section_title_or_number}",
                         "section {section_title_or_number}",
                         "go to {section_title_or_number}",
                         "go to section {section_title_or_number}"
@@ -83,6 +88,10 @@
                 },
                 {
                     "name": "AMAZON.NoIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.FallbackIntent",
                     "samples": []
                 }
             ],
