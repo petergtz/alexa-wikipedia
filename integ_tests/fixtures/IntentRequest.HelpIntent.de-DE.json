@@ -1,0 +1,42 @@
+{
+	"version": "1.0",
+	"session": {
+		"new": false,
+		"sessionId": "xxx",
+		"application": {
+			"applicationId": "xxx"
+		},
+		"attributes": {
+			"last_question": "none"
+		},
+		"user": {
+			"userId": "xxx"
+		}
+	},
+	"context": {
+		"System": {
+			"application": {
+				"applicationId": "xxx"
+			},
+			"user": {
+				"userId": "xxx"
+			},
+			"device": {
+				"deviceId": "xxx",
+				"supportedInterfaces": {}
+			},
+			"apiEndpoint": "https://api.eu.amazonalexa.com",
+			"apiAccessToken": "xxx"
+		}
+	},
+	"request": {
+		"type": "IntentRequest",
+		"requestId": "xxx",
+		"timestamp": "TIMESTAMP",
+		"locale": "de-DE",
+		"intent": {
+			"name": "AMAZON.HelpIntent",
+			"confirmationStatus": "NONE"
+		}
+	}
+}
