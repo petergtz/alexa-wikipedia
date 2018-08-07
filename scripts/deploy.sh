@@ -15,10 +15,10 @@ export APP_NAME=alexa-wikipedia-$SHA
 for region in 'ng' 'eu-de' 'eu-gb'; do
     open https://login.$region.bluemix.net/UAALoginServerWAR/passcode
 
-    cf login -a api.$region.bluemix.net --sso -o $(lpass show Personal/alexa-org --notes) -s alexa
+    cf login -a api.$region.bluemix.net --sso -o $(lpass show Personal/Alexa-Wikipedia-Skill --notes) -s alexa
 
     cf push --no-start -b https://github.com/cloudfoundry/go-buildpack.git $APP_NAME --hostname alexa-wikipedia
-    cf set-env $APP_NAME APPLICATION_ID $(lpass show Personal/Alexa-Wikipedia-Skill-Application-ID --password)
+    cf set-env $APP_NAME APPLICATION_ID $(lpass show Personal/Alexa-Wikipedia-Skill --password)
     cf restart $APP_NAME
 
     export OLD_RELEASES=$(cf apps | grep alexa-wikipedia | grep -v $SHA | cut -f 1 -d ' ')
