@@ -1,0 +1,13 @@
+{
+    "version": "1.0",
+    "sessionAttributes": {
+        "last_question": "none"
+    },
+    "response": {
+        "outputSpeech": {
+            "type": "PlainText",
+            "text": "This is Wikipedia. To read an article say e.g. \"What is a cheese cake?\"."
+        },
+        "shouldEndSession": false
+    }
+}

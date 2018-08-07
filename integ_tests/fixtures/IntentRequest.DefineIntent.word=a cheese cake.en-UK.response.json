@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "sessionAttributes": {
+      "last_question": "should_continue",
+      "position": 0,
+      "word": "a cheese cake"
+    },
+    "response": {
+      "outputSpeech": {
+        "type": "PlainText",
+        "text": "Cheesecake is a sweet dessert consisting of one or more layers. The main, and thickest layer, consists of a mixture of soft, fresh cheese (typically cream cheese or ricotta), eggs, vanilla and sugar; if there is a bottom layer it often consists of a crust or base made from crushed cookies (or digestive biscuits), graham crackers, pastry, or sponge cake. It may be baked or unbaked (usually refrigerated). Cheesecake is usually sweetened with sugar and may be flavored or topped with fruit, whipped cream, nuts, cookies, fruit sauce, or chocolate syrup. Cheesecake can be prepared in many flavors, such as strawberry, pumpkin, key lime, lemon, chocolate, Oreo, chestnut, or toffee. For further navigation you can jump to the table of contents any time or jump to a specific section. For now, shall I simply continue reading?"
+      },
+      "shouldEndSession": false
+    }
+  }

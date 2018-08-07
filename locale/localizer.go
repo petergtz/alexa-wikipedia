@@ -15,10 +15,12 @@ var (
 	numbers = map[string][]string{
 		"de-DE": []string{"null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn", "zwanzig"},
 		"en-US": []string{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelf", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"},
+		"en-UK": []string{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelf", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"},
 	}
 	endpoints = map[string]string{
 		"de-DE": "de.wikipedia.org",
 		"en-US": "en.wikipedia.org",
+		"en-UK": "en.wikipedia.org",
 	}
 )
 
