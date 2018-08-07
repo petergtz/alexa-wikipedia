@@ -14,6 +14,7 @@ WhichSectionToJump = "Zu welchem Abschnitt möchtest Du springen?"
 YouAreAtWikipediaNow = "Du befindest Dich jetzt bei Wikipedia. Um einen Artikel vorgelesen zu bekommen, sage z.B. \"Suche nach Käsekuchen\"."
 HelpText = "Um einen Artikel vorgelesen zu bekommen, sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen."
 FurtherNavigationHints = "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. Soll ich zunächst einfach weiterlesen?"
+FallbackText = "Meine Enzyklopädie kann hiermit nicht weiterhelfen. Aber Du kannst z.B. sagen \"Suche nach Käsekuchen\"."
 `)
 
 	EnUs = []byte(`
@@ -29,5 +30,6 @@ WhichSectionToJump = "Which section do you want to go to?"
 YouAreAtWikipediaNow = "This is Wikipedia. To read an article say e.g. \"What is a cheese cake?\"."
 HelpText = "To read an article say e.g. \"What is a cheese cake?\"."
 FurtherNavigationHints = "For further navigation you can jump to the table of contents any time or jump to a specific section. For now, shall I simply continue reading?"
+FallbackText = "My encyclopdia cannot help with that. But you could e.g. search for cheese cake."
 `)
 )

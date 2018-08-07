@@ -334,6 +334,15 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					}})),
 				},
 			}
+		case "AMAZON.FallbackIntent":
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
+					OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+						ID:    "FallbackText",
+						Other: "Meine Enzyklopädie kann hiermit nicht weiterhelfen. Aber Du kannst z.B. sagen \"Suche nach Käsekuchen\".",
+					}})),
+				},
+			}
 		case "AMAZON.CancelIntent", "AMAZON.StopIntent":
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{ShouldSessionEnd: true},
