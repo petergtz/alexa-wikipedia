@@ -6,6 +6,4 @@ applications:
   env:
     GOVERSION: go1.10
     GOPACKAGENAME: github.com/petergtz/alexa-wikipedia
-  routes:
-  - route: alexa-wikipedia.eu-gb.mybluemix.net
   buildpack: go_buildpack
