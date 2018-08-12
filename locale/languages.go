@@ -18,7 +18,7 @@ FallbackText = "Meine Enzyklopädie kann hiermit nicht weiterhelfen. Aber Du kan
 `)
 
 	EnUs = []byte(`
-CouldNotFindExpression = "I couldn't find this in Wikipedia. Why don't a try a different expression?"
+CouldNotFindExpression = "I couldn't find this in Wikipedia. Why don't you a try a different expression?"
 CouldNotFindSection = "I couldn't find the section \"{{.SectionTitleOrNumber}}\"."
 "No?Okay" = "No? Okay."
 Point = "point"
