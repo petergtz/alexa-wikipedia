@@ -19,6 +19,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	. "github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
+	"github.com/petergtz/alexa-wikipedia/s3"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 	"github.com/petergtz/go-alexa"
 )
@@ -32,7 +33,7 @@ func main() {
 	defer l.Sync()
 	logger = l.Sugar()
 
-	i18nBundle := &i18n.Bundle{DefaultLanguage: language.English}
+	i18nBundle := i18n.NewBundle(language.English)
 	i18nBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	i18nBundle.MustParseMessageFileBytes(locale.DeDe, "active.de.toml")
@@ -54,12 +55,21 @@ func main() {
 		logger.Fatal("env var APPLICATION_ID not provided.")
 	}
 
+	if os.Getenv("ACCESS_KEY_ID") == "" {
+		logger.Fatal("env var ACCESS_KEY_ID not provided.")
+	}
+
+	if os.Getenv("SECRET_ACCESS_KEY") == "" {
+		logger.Fatal("env var SECRET_ACCESS_KEY not provided.")
+	}
+
 	handler := &alexa.Handler{
 		Skill: &WikipediaSkill{
-			i18nBundle: i18nBundle,
-			wiki:       &mediawiki.MediaWiki{},
+			i18nBundle:  i18nBundle,
+			wiki:        &mediawiki.MediaWiki{},
+			persistence: s3.NewPersistence(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "alexa-wikipedia", logger),
 		},
-		Log: logger,
+		Log:                   logger,
 		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
 		SkipRequestValidation: skipRequestValidation,
 	}
@@ -96,9 +106,13 @@ func main() {
 	logger.Fatal(e)
 }
 
+type Persistence interface {
+	LogDefineIntentRequest(timestamp time.Time, searchQuery string, actualTitle string, locale string)
+}
 type WikipediaSkill struct {
-	wiki       wiki.Wiki
-	i18nBundle *i18n.Bundle
+	wiki        wiki.Wiki
+	i18nBundle  *i18n.Bundle
+	persistence Persistence
 }
 
 const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
@@ -163,6 +177,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			default:
 				definition = page.Body
 			}
+			h.persistence.LogDefineIntentRequest(time.Now(), intent.Slots["word"].Value, page.Title, requestEnv.Request.Locale)
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
 					OutputSpeech: plainText(definition + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
