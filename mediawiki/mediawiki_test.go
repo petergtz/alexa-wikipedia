@@ -14,6 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/petergtz/alexa-wikipedia/wiki"
+	"golang.org/x/text/language"
 )
 
 var _ = Describe("Mediawiki", func() {
@@ -21,7 +22,7 @@ var _ = Describe("Mediawiki", func() {
 	BeforeEach(func() {
 		logger, e := zap.NewDevelopment()
 		Expect(e).NotTo(HaveOccurred())
-		localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE", logger.Sugar())
+		localizer = locale.NewLocalizer(i18n.NewBundle(language.English), "de-DE", logger.Sugar())
 	})
 
 	It("returns the page even when it's not an exact match", func() {

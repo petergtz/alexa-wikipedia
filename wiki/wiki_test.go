@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
+	"golang.org/x/text/language"
 
 	"github.com/petergtz/alexa-wikipedia/locale"
 	"github.com/petergtz/alexa-wikipedia/wiki"
@@ -13,7 +14,7 @@ import (
 var (
 	logger, _ = zap.NewDevelopment()
 
-	localizer = locale.NewLocalizer(&i18n.Bundle{}, "de-DE", logger.Sugar())
+	localizer = locale.NewLocalizer(i18n.NewBundle(language.English), "de-DE", logger.Sugar())
 
 	page = wiki.Page{
 		Title: "Main Title",
