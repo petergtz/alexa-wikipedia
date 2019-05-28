@@ -19,6 +19,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	. "github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
+	"github.com/petergtz/alexa-wikipedia/persistence"
 	"github.com/petergtz/alexa-wikipedia/s3"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 	"github.com/petergtz/go-alexa"
@@ -174,7 +175,15 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			default:
 				definition = page.Body
 			}
-			h.persistence.LogDefineIntentRequest(time.Now(), intent.Slots["word"].Value, page.Title, requestEnv.Request.Locale)
+			h.persistence.LogDefineIntentRequest(persistence.LogEntry{
+				UnixTimestamp: time.Now().Unix(),
+				Timestamp:     time.Now(),
+				SearchQuery:   intent.Slots["word"].Value,
+				ActualTitle:   page.Title,
+				Locale:        requestEnv.Request.Locale,
+				UserID:        requestEnv.Session.User.UserID,
+				SessionID:     requestEnv.Session.SessionID,
+			})
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
 					OutputSpeech: plainText(definition + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{

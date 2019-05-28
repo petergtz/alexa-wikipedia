@@ -3,10 +3,13 @@ package persistence
 import "time"
 
 type LogEntry struct {
-	Timestamp   time.Time
-	SearchQuery string
-	ActualTitle string
-	Locale      string
+	UnixTimestamp int64     `json:"unix_timestamp"`
+	Timestamp     time.Time `json:"timestamp"`
+	SearchQuery   string    `json:"search_query"`
+	ActualTitle   string    `json:"actual_title"`
+	Locale        string    `json:"locale"`
+	UserID        string    `json:"user_id"`
+	SessionID     string    `json:"session_id"`
 }
 
 type Persistence interface {

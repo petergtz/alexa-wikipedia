@@ -31,22 +31,31 @@ var _ = Describe("S3", func() {
 		persistence := NewPersistence(credentials.AccessKeyId, credentials.SecretAccessKey, "alexa-wikipedia", logger.Sugar())
 		defer persistence.ShutDown()
 		persistence.LogDefineIntentRequest(p.LogEntry{
-			Timestamp:   time.Now(),
-			SearchQuery: "Bla",
-			ActualTitle: "blub",
-			Locale:      "de-DE",
+			UnixTimestamp: time.Now().Unix(),
+			Timestamp:     time.Now(),
+			SearchQuery:   "Bla",
+			ActualTitle:   "blub",
+			Locale:        "de-DE",
+			UserID:        "userid1",
+			SessionID:     "sessionid1",
 		})
 		persistence.LogDefineIntentRequest(p.LogEntry{
-			Timestamp:   time.Now(),
-			SearchQuery: "Bla2",
-			ActualTitle: "blub2",
-			Locale:      "english",
+			UnixTimestamp: time.Now().Unix(),
+			Timestamp:     time.Now(),
+			SearchQuery:   "Bla2",
+			ActualTitle:   "blub2",
+			Locale:        "english",
+			UserID:        "userid2",
+			SessionID:     "sessionid2",
 		})
 		persistence.LogDefineIntentRequest(p.LogEntry{
-			Timestamp:   time.Now(),
-			SearchQuery: "Bla3",
-			ActualTitle: "blub4",
-			Locale:      "de-DE",
+			UnixTimestamp: time.Now().Unix(),
+			Timestamp:     time.Now(),
+			SearchQuery:   "Bla3",
+			ActualTitle:   "blub4",
+			Locale:        "de-DE",
+			UserID:        "userid3",
+			SessionID:     "sessionid3",
 		})
 	})
 })
