@@ -5,11 +5,14 @@ go 1.12
 require (
 	github.com/BurntSushi/toml v0.3.0
 	github.com/aws/aws-sdk-go v1.19.38
+	github.com/facebookarchive/muster v0.0.0-20150708232844-fd3d7953fd52
+	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
+	github.com/facebookgo/limitgroup v0.0.0-20150612190941-6abd8d71ec01 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.0.0
-	github.com/onsi/ginkgo v1.6.0
+	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.4.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/petergtz/go-alexa v0.0.0-20180730203947-d2be3dc8503d

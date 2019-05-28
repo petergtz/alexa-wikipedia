@@ -11,55 +11,77 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/facebookarchive/muster"
+	"github.com/petergtz/alexa-wikipedia/persistence"
 	"go.uber.org/zap"
 )
 
 type Persistence struct {
-	s3Client *s3.S3
-	bucket   string
-	logger   *zap.SugaredLogger
+	musterClient *muster.Client
 }
 
 func NewPersistence(accessKeyID, secretAccessKey, bucket string, logger *zap.SugaredLogger) *Persistence {
 	rand.Seed(time.Now().Unix())
-	return &Persistence{
-		s3Client: s3.New(session.Must(session.NewSession(&aws.Config{
-			Region:      aws.String("eu-central-1"),
-			Credentials: credentials.NewStaticCredentials(accessKeyID, secretAccessKey, ""),
-		}))),
-		bucket: bucket,
-		logger: logger,
+	s3Client := s3.New(session.Must(session.NewSession(&aws.Config{
+		Region:      aws.String("eu-central-1"),
+		Credentials: credentials.NewStaticCredentials(accessKeyID, secretAccessKey, ""),
+	})))
+	result := &Persistence{
+		musterClient: &muster.Client{
+			MaxBatchSize:        100,
+			BatchTimeout:        5 * time.Minute,
+			PendingWorkCapacity: 1000,
+			BatchMaker: func() muster.Batch {
+				return &batch{
+					logger:   logger,
+					bucket:   bucket,
+					s3Client: s3Client,
+				}
+			},
+		},
 	}
+	e := result.musterClient.Start()
+	if e != nil {
+		panic(e)
+	}
+	return result
 }
 
-func (p *Persistence) LogDefineIntentRequest(timestamp time.Time, searchQuery string, actualTitle string, locale string) {
-	b, e := json.Marshal(map[string]interface{}{
-		"timestamp":    timestamp.Unix(),
-		"search_query": searchQuery,
-		"actual_title": actualTitle,
-		"locale":       locale,
-	})
+func (p *Persistence) LogDefineIntentRequest(logEntry persistence.LogEntry) {
+	p.musterClient.Work <- logEntry
+}
+
+func (p *Persistence) ShutDown() {
+	p.musterClient.Stop()
+}
+
+type batch struct {
+	s3Client *s3.S3
+	bucket   string
+	logger   *zap.SugaredLogger
+
+	entries []persistence.LogEntry
+}
+
+func (bm *batch) Add(item interface{}) {
+	bm.entries = append(bm.entries, item.(persistence.LogEntry))
+}
+
+func (bm *batch) Fire(notifier muster.Notifier) {
+	defer notifier.Done()
+
+	b, e := json.Marshal(bm.entries)
 	if e != nil {
-		p.logger.Errorw("Error while trying to marshal DefineIntent request data",
-			"bucket", p.bucket,
-			"timestamp", timestamp,
-			"search-query", searchQuery,
-			"actual-title", actualTitle,
-			"locale", locale,
-			"error", e)
+		bm.logger.Errorw("Error while trying to marshal log entries", "error", e)
 	}
-	_, e = p.s3Client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(p.bucket),
-		Key:    aws.String(locale + "_" + timestamp.Format(time.RFC3339Nano) + "_" + fmt.Sprintf("%v", rand.Intn(10000)) + ".json"),
+
+	_, e = bm.s3Client.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(bm.bucket),
+		Key:    aws.String(time.Now().Format(time.RFC3339Nano) + "_" + fmt.Sprintf("%v", rand.Intn(10000)) + ".json"),
 		Body:   bytes.NewReader(b),
 	})
 	if e != nil {
-		p.logger.Errorw("Error while trying to upload DefineIntent request data",
-			"bucket", p.bucket,
-			"timestamp", timestamp,
-			"search-query", searchQuery,
-			"actual-title", actualTitle,
-			"locale", locale,
-			"error", e)
+		bm.logger.Errorw("Error while trying to upload DefineIntent request data", "bucket", bm.bucket, "error", e)
 	}
+
 }

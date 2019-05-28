@@ -106,13 +106,10 @@ func main() {
 	logger.Fatal(e)
 }
 
-type Persistence interface {
-	LogDefineIntentRequest(timestamp time.Time, searchQuery string, actualTitle string, locale string)
-}
 type WikipediaSkill struct {
 	wiki        wiki.Wiki
 	i18nBundle  *i18n.Bundle
-	persistence Persistence
+	persistence persistence.Persistence
 }
 
 const helpText = "Um einen Artikel vorgelesen zu bekommen, " +

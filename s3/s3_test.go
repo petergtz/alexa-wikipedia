@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
 
+	p "github.com/petergtz/alexa-wikipedia/persistence"
 	. "github.com/petergtz/alexa-wikipedia/s3"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -28,6 +29,24 @@ var _ = Describe("S3", func() {
 		Expect(e).NotTo(HaveOccurred())
 
 		persistence := NewPersistence(credentials.AccessKeyId, credentials.SecretAccessKey, "alexa-wikipedia", logger.Sugar())
-		persistence.LogDefineIntentRequest(time.Now(), "Bla", "blub", "de-DE")
+		defer persistence.ShutDown()
+		persistence.LogDefineIntentRequest(p.LogEntry{
+			Timestamp:   time.Now(),
+			SearchQuery: "Bla",
+			ActualTitle: "blub",
+			Locale:      "de-DE",
+		})
+		persistence.LogDefineIntentRequest(p.LogEntry{
+			Timestamp:   time.Now(),
+			SearchQuery: "Bla2",
+			ActualTitle: "blub2",
+			Locale:      "english",
+		})
+		persistence.LogDefineIntentRequest(p.LogEntry{
+			Timestamp:   time.Now(),
+			SearchQuery: "Bla3",
+			ActualTitle: "blub4",
+			Locale:      "de-DE",
+		})
 	})
 })

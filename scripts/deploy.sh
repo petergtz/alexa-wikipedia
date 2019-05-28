@@ -19,7 +19,8 @@ for region in 'ng' 'eu-de' 'eu-gb'; do
 
     cf push --no-start -b https://github.com/cloudfoundry/go-buildpack.git $APP_NAME --hostname alexa-wikipedia
     cf set-env $APP_NAME APPLICATION_ID $(lpass show Personal/Alexa-Wikipedia-Skill --password)
-    cf restart $APP_NAME
+    cf set-env $APP_NAME ACCESS_KEY_ID $(lpass show Personal/Alexa-Wikipedia-S3 --username)
+    cf restart $APP_NAME SECRET_ACCESS_KEY $(lpass show Personal/Alexa-Wikipedia-S3 --password)
 
     export OLD_RELEASES=$(cf apps | grep alexa-wikipedia | grep -v $SHA | cut -f 1 -d ' ')
 
