@@ -2,6 +2,10 @@ language: go
 go:
   - stable
 
+env:
+  global:
+    - GO111MODULE=on
+
 install:
   - go get github.com/onsi/ginkgo/ginkgo
 
