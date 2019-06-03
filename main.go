@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/BurntSushi/toml"
+	"github.com/petergtz/alexa-wikipedia/dynamodb"
 	"github.com/petergtz/alexa-wikipedia/locale"
 
 	"golang.org/x/text/language"
@@ -20,7 +21,6 @@ import (
 	. "github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/petergtz/alexa-wikipedia/persistence"
-	"github.com/petergtz/alexa-wikipedia/s3"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 	"github.com/petergtz/go-alexa"
 )
@@ -68,7 +68,7 @@ func main() {
 		Skill: &WikipediaSkill{
 			i18nBundle:  i18nBundle,
 			wiki:        &mediawiki.MediaWiki{},
-			persistence: s3.NewPersistence(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "alexa-wikipedia", logger),
+			persistence: dynamodb.NewPersistence(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), logger),
 		},
 		Log:                   logger,
 		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
@@ -176,13 +176,14 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				definition = page.Body
 			}
 			h.persistence.LogDefineIntentRequest(persistence.LogEntry{
+				RequestID:     requestEnv.Request.RequestID,
 				UnixTimestamp: time.Now().Unix(),
 				Timestamp:     time.Now(),
-				SearchQuery:   intent.Slots["word"].Value,
-				ActualTitle:   page.Title,
-				Locale:        requestEnv.Request.Locale,
 				UserID:        requestEnv.Session.User.UserID,
 				SessionID:     requestEnv.Session.SessionID,
+				Locale:        requestEnv.Request.Locale,
+				SearchQuery:   intent.Slots["word"].Value,
+				ActualTitle:   page.Title,
 			})
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
