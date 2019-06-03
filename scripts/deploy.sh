@@ -7,6 +7,7 @@ if [[ -n $(git status -s) ]]; then
     exit 1
 fi
 
+. private/s3-credentials.sh
 ginkgo -r
 
 export SHA=$(git rev-parse --short HEAD)
