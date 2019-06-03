@@ -1,16 +1,16 @@
 package s3_test
 
 import (
-	"io/ioutil"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
 
+	"os"
+
 	p "github.com/petergtz/alexa-wikipedia/persistence"
 	. "github.com/petergtz/alexa-wikipedia/s3"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type Credentials struct {
@@ -20,15 +20,18 @@ type Credentials struct {
 
 var _ = Describe("S3", func() {
 	It("can create an entry", func() {
-		content, e := ioutil.ReadFile("../private/s3-credentials")
-		Expect(e).NotTo(HaveOccurred())
-		var credentials Credentials
-		e = yaml.Unmarshal(content, &credentials)
-		Expect(e).NotTo(HaveOccurred())
 		logger, e := zap.NewDevelopment()
 		Expect(e).NotTo(HaveOccurred())
 
-		persistence := NewPersistence(credentials.AccessKeyId, credentials.SecretAccessKey, "alexa-wikipedia", logger.Sugar())
+		if os.Getenv("ACCESS_KEY_ID") == "" {
+			logger.Fatal("env var ACCESS_KEY_ID not provided.")
+		}
+
+		if os.Getenv("SECRET_ACCESS_KEY") == "" {
+			logger.Fatal("env var SECRET_ACCESS_KEY not provided.")
+		}
+
+		persistence := NewPersistence(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "alexa-wikipedia", logger.Sugar())
 		defer persistence.ShutDown()
 		persistence.LogDefineIntentRequest(p.LogEntry{
 			UnixTimestamp: time.Now().Unix(),
