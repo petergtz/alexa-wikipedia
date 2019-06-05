@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/BurntSushi/toml"
-	"github.com/petergtz/alexa-wikipedia/dynamodb"
 	"github.com/petergtz/alexa-wikipedia/locale"
 
 	"golang.org/x/text/language"
@@ -20,9 +19,10 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	. "github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
-	"github.com/petergtz/alexa-wikipedia/persistence"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 	"github.com/petergtz/go-alexa"
+	"github.com/petergtz/go-alexa/decorator"
+	"github.com/petergtz/go-alexa/dynamodb"
 )
 
 var (
@@ -64,12 +64,20 @@ func main() {
 		logger.Fatal("env var SECRET_ACCESS_KEY not provided.")
 	}
 
+	interactionLogger := dynamodb.NewInteractionLogger(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), logger, "AlexaWikipediaRequests")
 	handler := &alexa.Handler{
-		Skill: &WikipediaSkill{
-			i18nBundle:  i18nBundle,
-			wiki:        &mediawiki.MediaWiki{},
-			persistence: dynamodb.NewPersistence(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), logger),
-		},
+		Skill: decorator.ForSkillWithInteractionLogging(
+			&WikipediaSkill{
+				i18nBundle:         i18nBundle,
+				wiki:               &mediawiki.MediaWiki{},
+				interactionLogger:  interactionLogger,
+				interactionHistory: interactionLogger,
+			},
+			interactionLogger,
+			func(requestEnv *alexa.RequestEnvelope) bool {
+				return requestEnv.Request.Type != "IntentRequest" && requestEnv.Request.Intent.Name != "DefineIntent"
+			},
+		),
 		Log:                   logger,
 		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
 		SkipRequestValidation: skipRequestValidation,
@@ -108,9 +116,10 @@ func main() {
 }
 
 type WikipediaSkill struct {
-	wiki        wiki.Wiki
-	i18nBundle  *i18n.Bundle
-	persistence persistence.Persistence
+	wiki               wiki.Wiki
+	i18nBundle         *i18n.Bundle
+	interactionLogger  alexa.InteractionLogger
+	interactionHistory alexa.InteractionHistory
 }
 
 const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
@@ -153,6 +162,12 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				page, e = h.wiki.SearchPage(intent.Slots["word"].Value, l)
 				switch {
 				case isNotFoundError(e):
+					h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
+						"Intent":      intent.Name,
+						"SearchQuery": intent.Slots["word"].Value,
+						"ActualTitle": "NOT_FOUND",
+					}))
+
 					return &alexa.ResponseEnvelope{Version: "1.0",
 						Response: &alexa.Response{
 							OutputSpeech: plainText(
@@ -175,16 +190,14 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			default:
 				definition = page.Body
 			}
-			h.persistence.LogDefineIntentRequest(persistence.LogEntry{
-				RequestID:     requestEnv.Request.RequestID,
-				UnixTimestamp: time.Now().Unix(),
-				Timestamp:     time.Now(),
-				UserID:        requestEnv.Session.User.UserID,
-				SessionID:     requestEnv.Session.SessionID,
-				Locale:        requestEnv.Request.Locale,
-				SearchQuery:   intent.Slots["word"].Value,
-				ActualTitle:   page.Title,
-			})
+			// TODO:
+			// if searchWasAlreadyConductedTwice(h.interactionHistory.GetInteractionsByUser(requestEnv.Session.User.UserID)) {
+			// }
+			h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
+				"Intent":      intent.Name,
+				"SearchQuery": intent.Slots["word"].Value,
+				"ActualTitle": page.Title,
+			}))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
 					OutputSpeech: plainText(definition + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{

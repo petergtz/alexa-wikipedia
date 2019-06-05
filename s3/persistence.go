@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/facebookarchive/muster"
-	"github.com/petergtz/alexa-wikipedia/persistence"
+	"github.com/petergtz/go-alexa"
 	"go.uber.org/zap"
 )
 
@@ -47,7 +47,7 @@ func NewPersistence(accessKeyID, secretAccessKey, bucket string, logger *zap.Sug
 	return result
 }
 
-func (p *Persistence) LogDefineIntentRequest(logEntry persistence.LogEntry) {
+func (p *Persistence) LogDefineIntentRequest(logEntry alexa.Interaction) {
 	p.musterClient.Work <- logEntry
 }
 
@@ -60,11 +60,11 @@ type batch struct {
 	bucket   string
 	logger   *zap.SugaredLogger
 
-	entries []persistence.LogEntry
+	entries []alexa.Interaction
 }
 
 func (bm *batch) Add(item interface{}) {
-	bm.entries = append(bm.entries, item.(persistence.LogEntry))
+	bm.entries = append(bm.entries, item.(alexa.Interaction))
 }
 
 func (bm *batch) Fire(notifier muster.Notifier) {

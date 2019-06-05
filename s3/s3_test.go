@@ -9,8 +9,8 @@ import (
 
 	"os"
 
-	p "github.com/petergtz/alexa-wikipedia/persistence"
 	. "github.com/petergtz/alexa-wikipedia/s3"
+	"github.com/petergtz/go-alexa"
 )
 
 type Credentials struct {
@@ -33,32 +33,38 @@ var _ = Describe("S3", func() {
 
 		persistence := NewPersistence(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "alexa-wikipedia", logger.Sugar())
 		defer persistence.ShutDown()
-		persistence.LogDefineIntentRequest(p.LogEntry{
+		persistence.LogDefineIntentRequest(alexa.Interaction{
 			UnixTimestamp: time.Now().Unix(),
 			Timestamp:     time.Now(),
-			SearchQuery:   "Bla",
-			ActualTitle:   "blub",
 			Locale:        "de-DE",
 			UserID:        "userid1",
 			SessionID:     "sessionid1",
+			Attributes: map[string]interface{}{
+				"SearchQuery": "Bla",
+				"ActualTitle": "blub",
+			},
 		})
-		persistence.LogDefineIntentRequest(p.LogEntry{
+		persistence.LogDefineIntentRequest(alexa.Interaction{
 			UnixTimestamp: time.Now().Unix(),
 			Timestamp:     time.Now(),
-			SearchQuery:   "Bla2",
-			ActualTitle:   "blub2",
 			Locale:        "english",
 			UserID:        "userid2",
 			SessionID:     "sessionid2",
+			Attributes: map[string]interface{}{
+				"SearchQuery": "Bla2",
+				"ActualTitle": "blub2",
+			},
 		})
-		persistence.LogDefineIntentRequest(p.LogEntry{
+		persistence.LogDefineIntentRequest(alexa.Interaction{
 			UnixTimestamp: time.Now().Unix(),
 			Timestamp:     time.Now(),
-			SearchQuery:   "Bla3",
-			ActualTitle:   "blub4",
 			Locale:        "de-DE",
 			UserID:        "userid3",
 			SessionID:     "sessionid3",
+			Attributes: map[string]interface{}{
+				"SearchQuery": "Bla3",
+				"ActualTitle": "blub4",
+			},
 		})
 	})
 })
