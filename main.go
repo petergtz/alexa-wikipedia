@@ -64,7 +64,7 @@ func main() {
 		logger.Fatal("env var SECRET_ACCESS_KEY not provided.")
 	}
 
-	interactionLogger := dynamodb.NewInteractionLogger(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), logger, "AlexaWikipediaRequests")
+	interactionLogger := dynamodb.NewInteractionLogger(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "eu-central-1", logger, "AlexaWikipediaRequests")
 	handler := &alexa.Handler{
 		Skill: decorator.ForSkillWithInteractionLogging(
 			&WikipediaSkill{

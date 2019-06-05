@@ -38,6 +38,8 @@ github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaR
 github.com/patrickmn/go-cache v2.1.0+incompatible/go.mod h1:3Qf8kWWT7OJRJbdiICTKqZju1ZixQ/KpMGzzAfe6+WQ=
 github.com/petergtz/go-alexa v0.0.0-20190605110956-865b58c8654f h1:74ZXXM1UWSLfEdpxPl8pWFysXNTzRS/R4x4GWRYKVgg=
 github.com/petergtz/go-alexa v0.0.0-20190605110956-865b58c8654f/go.mod h1:dEwjsv5Ft4jtaB+sAqQeCfGVFUjHMLlNcTxkwc7s3A4=
+github.com/petergtz/go-alexa v0.0.0-20190605151302-ed3c94917d3d h1:ZRIdVV1Xsg5mbq28ZykHKNewbXsvKMQFL0pORuRuhCo=
+github.com/petergtz/go-alexa v0.0.0-20190605151302-ed3c94917d3d/go.mod h1:dEwjsv5Ft4jtaB+sAqQeCfGVFUjHMLlNcTxkwc7s3A4=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
