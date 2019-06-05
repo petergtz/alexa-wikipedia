@@ -75,7 +75,7 @@ func main() {
 			},
 			interactionLogger,
 			func(requestEnv *alexa.RequestEnvelope) bool {
-				return requestEnv.Request.Type != "IntentRequest" && requestEnv.Request.Intent.Name != "DefineIntent"
+				return !(requestEnv.Request.Type == "IntentRequest" && requestEnv.Request.Intent.Name == "DefineIntent")
 			},
 		),
 		Log:                   logger,
