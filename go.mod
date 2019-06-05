@@ -16,7 +16,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.0.0
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
-	github.com/petergtz/go-alexa v0.0.0-20190605151302-ed3c94917d3d
+	github.com/petergtz/go-alexa v0.0.0-20190605153550-89ab2ef04e46
 	github.com/pkg/errors v0.8.1
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/zap v1.10.0
