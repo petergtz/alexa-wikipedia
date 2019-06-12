@@ -64,7 +64,13 @@ func main() {
 		logger.Fatal("env var SECRET_ACCESS_KEY not provided.")
 	}
 
-	interactionLogger := dynamodb.NewInteractionLogger(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "eu-central-1", logger, "AlexaWikipediaRequests")
+	tableName := "AlexaWikipediaRequests"
+	if os.Getenv("TABLE_NAME_OVERRIDE") != "" {
+		tableName = os.Getenv("TABLE_NAME_OVERRIDE")
+		logger.Infow("Using DynamoDB table override", "table", tableName)
+	}
+
+	interactionLogger := dynamodb.NewInteractionLogger(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "eu-central-1", logger, tableName)
 	handler := &alexa.Handler{
 		Skill: decorator.ForSkillWithInteractionLogging(
 			&WikipediaSkill{
