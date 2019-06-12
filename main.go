@@ -208,7 +208,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 			}
 		case "SpellIntent":
-			assembledSearchQuery := h.assambleSearchQueryFromSpelledTerm(intent.Slots["spelled_term"].Value, l)
+			assembledSearchQuery := l.AssembleTermFromSpelling(intent.Slots["spelled_term"].Value)
 			definition, e := h.findDefinition(assembledSearchQuery, l)
 			if e != nil {
 				logger.Errorw("Could not get Wikipedia page", "error", e)
@@ -456,10 +456,6 @@ func (h *WikipediaSkill) findDefinition(word string, l *locale.Localizer) (*wiki
 	default:
 		return &page, nil
 	}
-}
-
-func (h *WikipediaSkill) assambleSearchQueryFromSpelledTerm(spelledTerm string, l *locale.Localizer) string {
-	return strings.Join(strings.Split(strings.ReplaceAll(spelledTerm, "leerzeichen", " "), ". "), "")
 }
 
 func createLoggerWith(logLevel string) *zap.Logger {

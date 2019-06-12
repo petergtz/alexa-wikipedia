@@ -1,6 +1,8 @@
 package locale
 
 import (
+	"strings"
+
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
 )
@@ -54,4 +56,11 @@ func (l *Localizer) Spell(number int) string {
 
 func (l *Localizer) WikiEndpoint() string {
 	return endpoints[l.lang]
+}
+
+func (l *Localizer) AssembleTermFromSpelling(spelledTerm string) string {
+	if l.lang == "de-DE" {
+		return strings.Join(strings.Split(strings.ReplaceAll(spelledTerm, "leerzeichen", " "), ". "), "")
+	}
+	return strings.ReplaceAll(spelledTerm, "space", " ")
 }
