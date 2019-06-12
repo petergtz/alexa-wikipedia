@@ -149,10 +149,6 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "Okay, go ahead."
-                    },
-                    {
-                        "type": "PlainText",
                         "value": "Okay, please spell it."
                     }
                 ]

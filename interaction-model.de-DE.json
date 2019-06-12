@@ -148,10 +148,6 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "Okay, los geht's"
-                    },
-                    {
-                        "type": "PlainText",
                         "value": "Okay, buchstabiere deinen suchbegriff"
                     }
                 ]
