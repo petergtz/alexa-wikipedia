@@ -112,10 +112,10 @@ func main() {
 	}
 
 	if os.Getenv("SKILL_USE_TLS") == "true" {
-		logger.Infof("Certificate path: %v", os.Getenv("CERT"))
-		logger.Infof("Private key path: %v", os.Getenv("KEY"))
+		logger.Infow("Starting webserver", "use-tls", true, "cert-path", os.Getenv("CERT"), "key-path", os.Getenv("KEY"), "port", port, "address", addr)
 		e = httpServer.ListenAndServeTLS(os.Getenv("CERT"), os.Getenv("KEY"))
 	} else {
+		logger.Infow("Starting webserver", "use-tls", false, "port", port, "address", addr)
 		e = httpServer.ListenAndServe()
 	}
 	logger.Fatal(e)
