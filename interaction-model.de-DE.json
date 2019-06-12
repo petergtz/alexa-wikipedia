@@ -26,7 +26,6 @@
                     "samples": [
                         "{word} zu definieren",
                         "das wort {word} zu definieren",
-                        "das wort {word} zu definieren",
                         "definiere {word}",
                         "definiere das wort {word}",
                         "definiere den Ausdruck {word}",
@@ -46,6 +45,7 @@
                         "suche nach {word}",
                         "wann ist {word}",
                         "wann sind {word}",
+                        "wann war {word}",
                         "warum {word}",
                         "was bedeutet {word}",
                         "was bedeutet das Wort {word}",
