@@ -8,7 +8,7 @@ if [[ -n $(git status -s) ]]; then
 fi
 
 . private/s3-credentials.sh
-ginkgo -r
+TABLE_NAME_OVERRIDE=TestAlexaWikipediaRequests ginkgo -r
 
 export SHA=$(git rev-parse --short HEAD)
 export APP_NAME=alexa-wikipedia-$SHA

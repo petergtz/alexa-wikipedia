@@ -40,8 +40,6 @@ var _ = Describe("Skill", func() {
 		os.Setenv("SKILL_ADDR", "127.0.0.1")
 		os.Setenv("SKILL_SKIP_REQUEST_VALIDATION", "true")
 		os.Setenv("APPLICATION_ID", "xxx")
-		os.Setenv("ACCESS_KEY_ID", "xxx")
-		os.Setenv("SECRET_ACCESS_KEY", "xxx")
 
 		session, err = gexec.Start(exec.Command(pathToWebserver), GinkgoWriter, GinkgoWriter)
 		Ω(err).ShouldNot(HaveOccurred())
