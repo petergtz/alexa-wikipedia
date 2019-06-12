@@ -62,5 +62,5 @@ func (l *Localizer) AssembleTermFromSpelling(spelledTerm string) string {
 	if l.lang == "de-DE" {
 		return strings.Join(strings.Split(strings.ReplaceAll(spelledTerm, "leerzeichen", " "), ". "), "")
 	}
-	return strings.ReplaceAll(spelledTerm, "space", " ")
+	return strings.ToLower(strings.ReplaceAll(spelledTerm, "space", " "))
 }
