@@ -93,9 +93,70 @@
                 {
                     "name": "AMAZON.FallbackIntent",
                     "samples": []
+                },
+                {
+                    "name": "SpellIntent",
+                    "slots": [
+                        {
+                            "name": "spelled_term",
+                            "type": "AMAZON.SearchQuery",
+                            "samples": [
+                                "{spelled_term}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "let me spell",
+                        "I'll spell",
+                        "I will spell",
+                        "spell search",
+                        "spell search term",
+                        "let me spell the search term",
+                        "let me spell the search"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
                 }
             ],
             "types": []
-        }
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "SpellIntent",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "spelled_term",
+                            "type": "AMAZON.SearchQuery",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1281507882909.538083537623"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "delegationStrategy": "ALWAYS"
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.1281507882909.538083537623",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Okay, go ahead."
+                    },
+                    {
+                        "type": "PlainText",
+                        "value": "Okay, please spell it."
+                    }
+                ]
+            }
+        ]
     }
 }

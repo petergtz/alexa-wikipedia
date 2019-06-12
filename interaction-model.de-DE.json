@@ -88,9 +88,74 @@
                 {
                     "name": "AMAZON.NoIntent",
                     "samples": []
+                },
+                {
+                    "name": "SpellIntent",
+                    "slots": [
+                        {
+                            "name": "spelled_term",
+                            "type": "AMAZON.SearchQuery",
+                            "samples": [
+                                "{spelled_term}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "ich buchstabiere",
+                        "buchstabiere",
+                        "person buchstabieren",
+                        "name buchstabieren",
+                        "ausdruck buchstabieren",
+                        "suchbegriff buchstabieren",
+                        "buchstabiere suchbegriff",
+                        "begriff buchstabieren",
+                        "wort buchstabieren",
+                        "suche buchstabieren",
+                        "buchstabieren"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
                 }
             ],
             "types": []
-        }
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "SpellIntent",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "spelled_term",
+                            "type": "AMAZON.SearchQuery",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1281507882909.538083537623"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "delegationStrategy": "ALWAYS"
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.1281507882909.538083537623",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Okay, los geht's"
+                    },
+                    {
+                        "type": "PlainText",
+                        "value": "Okay, buchstabiere deinen suchbegriff"
+                    }
+                ]
+            }
+        ]
     }
 }
