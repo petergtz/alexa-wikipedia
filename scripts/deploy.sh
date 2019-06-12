@@ -13,7 +13,7 @@ TABLE_NAME_OVERRIDE=TestAlexaWikipediaRequests ginkgo -r
 export SHA=$(git rev-parse --short HEAD)
 export APP_NAME=alexa-wikipedia-$SHA
 
-for region in 'ng' 'eu-de' 'eu-gb'; do
+for region in 'eu-gb' 'ng' 'eu-de'; do
     open https://login.$region.bluemix.net/UAALoginServerWAR/passcode
 
     cf login -a api.$region.bluemix.net --sso -o $(lpass show Personal/Alexa-Wikipedia-Skill --notes) -s alexa
