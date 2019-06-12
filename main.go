@@ -194,7 +194,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(definition.Body + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+					OutputSpeech: plainText(strings.TrimRight(definition.Body, ". ") + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID: "FurtherNavigationHints",
 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
@@ -244,7 +244,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(definition.Body + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+					OutputSpeech: plainText(strings.TrimRight(definition.Body, ". ") + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID: "FurtherNavigationHints",
 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
