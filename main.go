@@ -161,40 +161,28 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		intent := requestEnv.Request.Intent
 		switch intent.Name {
 		case "DefineIntent":
-			var definition string
-			page, e := h.wiki.GetPage(intent.Slots["word"].Value, l)
-			switch {
-			case isNotFoundError(e):
-				page, e = h.wiki.SearchPage(intent.Slots["word"].Value, l)
-				switch {
-				case isNotFoundError(e):
-					h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
-						"Intent":      intent.Name,
-						"SearchQuery": intent.Slots["word"].Value,
-						"ActualTitle": "NOT_FOUND",
-					}))
-
-					return &alexa.ResponseEnvelope{Version: "1.0",
-						Response: &alexa.Response{
-							OutputSpeech: plainText(
-								l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
-									ID:    "CouldNotFindExpression",
-									Other: "Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff.",
-								}}),
-							),
-						},
-					}
-				case e != nil:
-					logger.Errorw("Could not get Wikipedia page", "error", e)
-					return internalError()
-				default:
-					definition = page.Body
-				}
-			case e != nil:
+			definition, e := h.findDefinition(intent.Slots["word"].Value, l)
+			if e != nil {
 				logger.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError()
-			default:
-				definition = page.Body
+			}
+			if definition == nil {
+				h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
+					"Intent":      intent.Name,
+					"SearchQuery": intent.Slots["word"].Value,
+					"ActualTitle": "NOT_FOUND",
+				}))
+
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response: &alexa.Response{
+						OutputSpeech: plainText(
+							l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+								ID:    "CouldNotFindExpression",
+								Other: "Diesen Begriff konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff.",
+							}}),
+						),
+					},
+				}
 			}
 			// TODO:
 			// if searchWasAlreadyConductedTwice(h.interactionHistory.GetInteractionsByUser(requestEnv.Session.User.UserID)) {
@@ -202,11 +190,11 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
 				"Intent":      intent.Name,
 				"SearchQuery": intent.Slots["word"].Value,
-				"ActualTitle": page.Title,
+				"ActualTitle": definition.Title,
 			}))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(definition + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+					OutputSpeech: plainText(definition.Body + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID: "FurtherNavigationHints",
 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
@@ -215,6 +203,56 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 				SessionAttributes: map[string]interface{}{
 					"word":          intent.Slots["word"].Value,
+					"position":      0,
+					"last_question": "should_continue",
+				},
+			}
+		case "SpellIntent":
+			assembledSearchQuery := h.assambleSearchQueryFromSpelledTerm(intent.Slots["spelled_term"].Value, l)
+			definition, e := h.findDefinition(assembledSearchQuery, l)
+			if e != nil {
+				logger.Errorw("Could not get Wikipedia page", "error", e)
+				return internalError()
+			}
+			if definition == nil {
+				h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
+					"Intent":               intent.Name,
+					"SpelledSearchQuery":   intent.Slots["spelled_term"].Value,
+					"AssembledSearchQuery": assembledSearchQuery,
+					"ActualTitle":          "NOT_FOUND",
+				}))
+
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response: &alexa.Response{
+						OutputSpeech: plainText(
+							l.MustLocalize(&LocalizeConfig{
+								DefaultMessage: &Message{
+									ID:    "CouldNotFindSpelledTerm",
+									Other: "Den buchstabierten Begriff {{.SpelledTerm}} konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff.",
+								},
+								TemplateData: map[string]string{"SpelledTerm": intent.Slots["spelled_term"].Value},
+							}),
+						),
+					},
+				}
+			}
+			h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
+				"Intent":               intent.Name,
+				"SpelledSearchQuery":   intent.Slots["spelled_term"].Value,
+				"AssembledSearchQuery": assembledSearchQuery,
+				"ActualTitle":          definition.Title,
+			}))
+			return &alexa.ResponseEnvelope{Version: "1.0",
+				Response: &alexa.Response{
+					OutputSpeech: plainText(definition.Body + " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+						ID: "FurtherNavigationHints",
+						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
+							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
+							"Soll ich zunächst einfach weiterlesen?",
+					}})),
+				},
+				SessionAttributes: map[string]interface{}{
+					"word":          assembledSearchQuery,
 					"position":      0,
 					"last_question": "should_continue",
 				},
@@ -398,6 +436,30 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 	default:
 		return &alexa.ResponseEnvelope{Version: "1.0"}
 	}
+}
+
+func (h *WikipediaSkill) findDefinition(word string, l *locale.Localizer) (*wiki.Page, error) {
+	page, e := h.wiki.GetPage(word, l)
+	switch {
+	case isNotFoundError(e):
+		page, e = h.wiki.SearchPage(word, l)
+		switch {
+		case isNotFoundError(e):
+			return nil, nil
+		case e != nil:
+			return nil, e
+		default:
+			return &page, nil
+		}
+	case e != nil:
+		return nil, e
+	default:
+		return &page, nil
+	}
+}
+
+func (h *WikipediaSkill) assambleSearchQueryFromSpelledTerm(spelledTerm string, l *locale.Localizer) string {
+	return strings.Join(strings.Split(strings.ReplaceAll(spelledTerm, "leerzeichen", " "), ". "), "")
 }
 
 func createLoggerWith(logLevel string) *zap.Logger {
