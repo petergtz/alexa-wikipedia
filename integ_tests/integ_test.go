@@ -41,6 +41,14 @@ var _ = Describe("Skill", func() {
 		os.Setenv("SKILL_SKIP_REQUEST_VALIDATION", "true")
 		os.Setenv("APPLICATION_ID", "xxx")
 
+		// satisfy the sanity checks in main
+		if os.Getenv("ACCESS_KEY_ID") == "" {
+			os.Setenv("ACCESS_KEY_ID", "xxx")
+		}
+		if os.Getenv("SECRET_ACCESS_KEY") == "" {
+			os.Setenv("SECRET_ACCESS_KEY", "xxx")
+		}
+
 		session, err = gexec.Start(exec.Command(pathToWebserver), GinkgoWriter, GinkgoWriter)
 		Ω(err).ShouldNot(HaveOccurred())
 		time.Sleep(200 * time.Millisecond)
