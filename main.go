@@ -164,7 +164,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			definition, e := h.findDefinition(intent.Slots["word"].Value, l)
 			if e != nil {
 				logger.Errorw("Could not get Wikipedia page", "error", e)
-				return internalError()
+				return internalError(l)
 			}
 			if definition == nil {
 				h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
@@ -212,7 +212,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			definition, e := h.findDefinition(assembledSearchQuery, l)
 			if e != nil {
 				logger.Errorw("Could not get Wikipedia page", "error", e)
-				return internalError()
+				return internalError(l)
 			}
 			if definition == nil {
 				h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
@@ -427,7 +427,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				Response: &alexa.Response{ShouldSessionEnd: true},
 			}
 		default:
-			return internalError()
+			return internalError(l)
 		}
 
 	case "SessionEndedRequest":
@@ -502,15 +502,15 @@ func lastQuestionIn(session *alexa.Session) string {
 	return session.Attributes["last_question"].(string)
 }
 
-func (h *WikipediaSkill) pageFromSession(session *alexa.Session, localizer *locale.Localizer) (wiki.Page, *alexa.ResponseEnvelope) {
+func (h *WikipediaSkill) pageFromSession(session *alexa.Session, l *locale.Localizer) (wiki.Page, *alexa.ResponseEnvelope) {
 	if !wordIn(session) {
 		return wiki.Page{}, quickHelp(session.Attributes)
 	}
 
-	page, e := h.wiki.GetPage(session.Attributes["word"].(string), localizer)
+	page, e := h.wiki.GetPage(session.Attributes["word"].(string), l)
 	switch {
 	case isNotFoundError(e):
-		page, e = h.wiki.SearchPage(session.Attributes["word"].(string), localizer)
+		page, e = h.wiki.SearchPage(session.Attributes["word"].(string), l)
 		switch {
 		case isNotFoundError(e):
 			return wiki.Page{}, &alexa.ResponseEnvelope{Version: "1.0",
@@ -520,11 +520,11 @@ func (h *WikipediaSkill) pageFromSession(session *alexa.Session, localizer *loca
 			}
 		case e != nil:
 			logger.Errorw("Could not get Wikipedia page", "error", e)
-			return wiki.Page{}, internalError()
+			return wiki.Page{}, internalError(l)
 		}
 	case e != nil:
 		logger.Errorw("Could not get Wikipedia page", "error", e)
-		return wiki.Page{}, internalError()
+		return wiki.Page{}, internalError(l)
 	}
 	return page, nil
 }
@@ -544,10 +544,13 @@ func plainText(text string) *alexa.OutputSpeech {
 	return &alexa.OutputSpeech{Type: "PlainText", Text: text}
 }
 
-func internalError() *alexa.ResponseEnvelope {
+func internalError(l *locale.Localizer) *alexa.ResponseEnvelope {
 	return &alexa.ResponseEnvelope{Version: "1.0",
 		Response: &alexa.Response{
-			OutputSpeech:     plainText("Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia."),
+			OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+				ID:    "InternalError",
+				Other: "Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia.",
+			}})),
 			ShouldSessionEnd: false,
 		},
 	}

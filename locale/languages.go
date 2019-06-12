@@ -16,6 +16,7 @@ HelpText = "Um einen Artikel vorgelesen zu bekommen, sage z.B. \"Suche nach Käs
 FurtherNavigationHints = "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. Soll ich zunächst einfach weiterlesen?"
 FallbackText = "Meine Enzyklopädie kann hiermit nicht weiterhelfen. Aber Du kannst z.B. sagen \"Suche nach Käsekuchen\"."
 CouldNotFindSpelledTerm = "Den buchstabierten Begriff {{.SpelledTerm}} konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."
+InternalError = "Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia."
 `)
 
 	EnUs = []byte(`
@@ -33,5 +34,6 @@ HelpText = "To read an article say e.g. \"What is a cheese cake?\"."
 FurtherNavigationHints = "For further navigation you can jump to the table of contents any time or jump to a specific section. For now, shall I simply continue reading?"
 FallbackText = "My encyclopdia cannot help with that. But you could e.g. search for cheese cake."
 CouldNotFindSpelledTerm = "I could not find the spelled term {{.SpelledTerm}} on Wikipedia. Why don't you a try a different term?"
+InternalError = "An internal error occurred while using My encyclopdia."
 `)
 )
