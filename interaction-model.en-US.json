@@ -95,11 +95,11 @@
                         }
                     ],
                     "samples": [
-                        "jump to section {section_title_or_number}",
-                        "jump to {section_title_or_number}",
-                        "section {section_title_or_number}",
                         "go to {section_title_or_number}",
-                        "go to section {section_title_or_number}"
+                        "go to section {section_title_or_number}",
+                        "jump to {section_title_or_number}",
+                        "jump to section {section_title_or_number}",
+                        "section {section_title_or_number}"
                     ]
                 },
                 {
@@ -136,13 +136,13 @@
                         }
                     ],
                     "samples": [
-                        "let me spell",
-                        "I'll spell",
                         "I will spell",
-                        "spell search",
-                        "spell search term",
+                        "I'll spell",
                         "let me spell the search term",
-                        "let me spell the search"
+                        "let me spell the search",
+                        "let me spell",
+                        "spell search term",
+                        "spell search"
                     ]
                 },
                 {
