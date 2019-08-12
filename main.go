@@ -128,14 +128,6 @@ type WikipediaSkill struct {
 	interactionHistory alexa.InteractionHistory
 }
 
-const helpText = "Um einen Artikel vorgelesen zu bekommen, " +
-	"sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". " +
-	"Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. " +
-	"Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen."
-
-const quickHelpText = "Suche zunächst nach einem Begriff. " +
-	"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\"."
-
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
 	logger.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
 		"SessionAttributes", requestEnv.Session.Attributes, "locale", requestEnv.Request.Locale)
@@ -408,8 +400,11 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
 					OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
-						ID:    "HelpText",
-						Other: helpText,
+						ID: "HelpText",
+						Other: "Um einen Artikel vorgelesen zu bekommen, " +
+							"sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\". " +
+							"Du kannst jederzeit zum Inhaltsverzeichnis springen, indem Du \"Inhaltsverzeichnis\" sagst. " +
+							"Oder sage \"Springe zu Abschnitt 3.2\", um direkt zu diesem Abschnitt zu springen.",
 					}})),
 				},
 			}
@@ -500,7 +495,7 @@ func lastQuestionIn(session *alexa.Session) string {
 
 func (h *WikipediaSkill) pageFromSession(session *alexa.Session, l *locale.Localizer) (wiki.Page, *alexa.ResponseEnvelope) {
 	if !wordIn(session) {
-		return wiki.Page{}, quickHelp(session.Attributes)
+		return wiki.Page{}, quickHelp(session.Attributes, l)
 	}
 
 	page, e := h.wiki.GetPage(session.Attributes["word"].(string), l)
@@ -525,9 +520,15 @@ func (h *WikipediaSkill) pageFromSession(session *alexa.Session, l *locale.Local
 	return page, nil
 }
 
-func quickHelp(sessionAttributes map[string]interface{}) *alexa.ResponseEnvelope {
+func quickHelp(sessionAttributes map[string]interface{}, l *locale.Localizer) *alexa.ResponseEnvelope {
 	return &alexa.ResponseEnvelope{Version: "1.0",
-		Response:          &alexa.Response{OutputSpeech: plainText(quickHelpText)},
+		Response: &alexa.Response{OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{
+			DefaultMessage: &Message{
+				ID: "quickHelpText",
+				Other: "Suche zunächst nach einem Begriff. " +
+					"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\".",
+			},
+		}))},
 		SessionAttributes: sessionAttributes,
 	}
 }
