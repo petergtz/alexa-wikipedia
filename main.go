@@ -524,7 +524,7 @@ func quickHelp(sessionAttributes map[string]interface{}, l *locale.Localizer) *a
 	return &alexa.ResponseEnvelope{Version: "1.0",
 		Response: &alexa.Response{OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{
 			DefaultMessage: &Message{
-				ID: "quickHelpText",
+				ID: "QuickHelpText",
 				Other: "Suche zunächst nach einem Begriff. " +
 					"Sage z.B. \"Suche nach Käsekuchen.\" oder \"Was ist Käsekuchen?\".",
 			},
