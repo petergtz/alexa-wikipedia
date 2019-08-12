@@ -3,3 +3,7 @@ tmp
 vendor
 private
 alexa-wikipedia
+cmd/scan-table/scan-table
+cmd/scan-table/requests*
+cmd/fetch-logs/fetch-logs
+cmd/fetch-logs/cache
