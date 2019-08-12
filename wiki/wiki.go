@@ -2,6 +2,7 @@ package wiki
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -67,6 +68,14 @@ func textFor(section Section, localizer *locale.Localizer) string {
 }
 
 func traverse2(s Section, level int, index int, cur int, sectionNumber string, prefix string, localizer *locale.Localizer) (text string, new_cur int) {
+	// Behavior of Alexa ASK is different for different locales.
+	// In DE "zwei" is kept as "zwei" in slot value.
+	// In EN "two" is converted to "2" in slot value.
+	// So in case we get the digits, we simply convert them back to the spelled version.
+	sectionNumberInt, e := strconv.Atoi(sectionNumber)
+	if e == nil {
+		sectionNumber = localizer.Spell(sectionNumberInt)
+	}
 	var currentSectionNumber string
 	switch level {
 	case 0:
