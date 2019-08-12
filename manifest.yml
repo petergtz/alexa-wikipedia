@@ -4,7 +4,7 @@ applications:
   memory: 64M
   instances: 3
   env:
-    GOVERSION: go1.12.5
+    GOVERSION: go1.12.7
     GOPACKAGENAME: github.com/petergtz/alexa-wikipedia
   buildpacks:
   - go_buildpack
