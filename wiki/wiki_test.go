@@ -137,5 +137,11 @@ var _ = Describe("Wiki", func() {
 			Expect(position).To(Equal(2))
 			Expect(text).To(Equal("section two. B. Body B"))
 		})
+
+		It("Can get section 3 dot 2", func() {
+			text, position := page.TextAndPositionFromSectionNumber("3 dot 2", localizer)
+			Expect(position).To(Equal(7))
+			Expect(text).To(Equal("section three.two. C.B. Body C.B"))
+		})
 	})
 })

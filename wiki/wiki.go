@@ -51,7 +51,7 @@ func traverse(s Section, cur int, target int, prefix string) (text string, new_c
 }
 
 func (p Page) TextAndPositionFromSectionNumber(sectionNumber string, localizer *locale.Localizer) (text string, position int) {
-	return traverse2(Section(p), 0, 1, 0, sectionNumber, "", localizer)
+	return traverse2(Section(p), 0, 1, 0, sectionNumber, "", "", localizer)
 }
 
 func textFor(section Section, localizer *locale.Localizer) string {
@@ -67,28 +67,32 @@ func textFor(section Section, localizer *locale.Localizer) string {
 	return s
 }
 
-func traverse2(s Section, level int, index int, cur int, sectionNumber string, prefix string, localizer *locale.Localizer) (text string, new_cur int) {
+func traverse2(s Section, level int, index int, cur int, sectionNumber string, prefix string, prefixDigits string, localizer *locale.Localizer) (text string, new_cur int) {
 	// Behavior of Alexa ASK is different for different locales.
 	// In DE "zwei" is kept as "zwei" in slot value.
 	// In EN "two" is converted to "2" in slot value.
-	// So in case we get the digits, we simply convert them back to the spelled version.
-	sectionNumberInt, e := strconv.Atoi(sectionNumber)
-	if e == nil {
-		sectionNumber = localizer.Spell(sectionNumberInt)
-	}
-	var currentSectionNumber string
+	// To account for this, we maintain 2 versions of the section number string
+	var (
+		currentSectionNumber       string
+		currentSectionNumberDigits string
+	)
 	switch level {
 	case 0:
 		currentSectionNumber = ""
+		currentSectionNumberDigits = ""
 	case 1:
 		currentSectionNumber = localizer.Spell(index)
+		currentSectionNumberDigits = strconv.Itoa(index)
 	default:
 		currentSectionNumber = prefix + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
 			ID: "Point", Other: "punkt",
 		}}) + " " + localizer.Spell(index)
+		currentSectionNumberDigits = prefixDigits + " " + localizer.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+			ID: "Point", Other: "punkt",
+		}}) + " " + strconv.Itoa(index)
 	}
 
-	if sectionNumber == currentSectionNumber {
+	if sectionNumber == currentSectionNumber || sectionNumber == currentSectionNumberDigits {
 		return textFor(s, localizer), cur
 	}
 	if s.Body != "" {
@@ -96,7 +100,7 @@ func traverse2(s Section, level int, index int, cur int, sectionNumber string, p
 	}
 	for i, section := range s.Subsections {
 		var ss string
-		ss, cur = traverse2(section, level+1, i+1, cur, sectionNumber, currentSectionNumber, localizer)
+		ss, cur = traverse2(section, level+1, i+1, cur, sectionNumber, currentSectionNumber, currentSectionNumberDigits, localizer)
 		if ss != "" {
 			return ss, cur
 		}
