@@ -18,6 +18,7 @@ FurtherNavigationHints = "Zur weiteren Navigation kannst Du jederzeit zum Inhalt
 FallbackText = "Meine Enzyklopädie kann hiermit nicht weiterhelfen. Aber Du kannst z.B. sagen \"Suche nach Käsekuchen\"."
 CouldNotFindSpelledTerm = "Den buchstabierten Begriff {{.SpelledTerm}} konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."
 InternalError = "Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia."
+EndOfArticle = "Oh! Wir sind bereits am Ende angelangt. Wenn Du noch einen weiteren Artikel vorgelesen kriegen möchtest, sage z.B. \"Suche nach Elefant\"."
 `)
 
 	EnUs = []byte(`
@@ -37,5 +38,6 @@ FurtherNavigationHints = "For further navigation you can jump to the table of co
 FallbackText = "My encyclopdia cannot help with that. But you could e.g. search for cheese cake."
 CouldNotFindSpelledTerm = "I could not find the spelled term {{.SpelledTerm}} on Wikipedia. Why don't you a try a different term?"
 InternalError = "An internal error occurred while using My encyclopdia."
+EndOfArticle = "Oh, we've already reached the end of the article. Why don't you try a different search. E.g. say \"What is an elephant\""
 `)
 )

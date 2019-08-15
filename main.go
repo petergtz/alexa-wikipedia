@@ -281,9 +281,27 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				int(requestEnv.Session.Attributes["position"].(float64)),
 				int(requestEnv.Session.Attributes["position_within_section_body"].(float64)))
 
+			bodyPart := h.bodyChopper.FetchBodyPart(page.TextForPosition(newPosition), newPositionWithinSectionBody)
+
+			if bodyPart == "" {
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response: &alexa.Response{
+						OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+							ID:    "EndOfArticle",
+							Other: "Oh! Wir sind bereits am Ende angelangt. Wenn Du noch einen weiteren Artikel vorgelesen kriegen möchtest, sage z.B. \"Suche nach Elefant\"",
+						}})),
+					},
+					SessionAttributes: map[string]interface{}{
+						"word":                         requestEnv.Session.Attributes["word"],
+						"position":                     newPosition,
+						"position_within_section_body": newPositionWithinSectionBody,
+					},
+				}
+			}
+
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(h.bodyChopper.FetchBodyPart(page.TextForPosition(newPosition), newPositionWithinSectionBody) + " " +
+					OutputSpeech: plainText(bodyPart + " " +
 						l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 							ID:    "ShouldIContinue",
 							Other: "Soll ich noch weiterlesen?",
@@ -328,9 +346,27 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				int(requestEnv.Session.Attributes["position"].(float64)),
 				int(requestEnv.Session.Attributes["position_within_section_body"].(float64)))
 
+			bodyPart := h.bodyChopper.FetchBodyPart(page.TextForPosition(newPosition), newPositionWithinSectionBody)
+
+			if bodyPart == "" {
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response: &alexa.Response{
+						OutputSpeech: plainText(l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+							ID:    "EndOfArticle",
+							Other: "Oh! wir sind bereits am Ende angelangt. Wenn Du noch einen weiteren Artikel vorgelesen kriegen möchtest, sage z.B. \"Suche nach Elefant\".",
+						}})),
+					},
+					SessionAttributes: map[string]interface{}{
+						"word":                         requestEnv.Session.Attributes["word"],
+						"position":                     newPosition,
+						"position_within_section_body": newPositionWithinSectionBody,
+					},
+				}
+			}
+
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(h.bodyChopper.FetchBodyPart(page.TextForPosition(newPosition), newPositionWithinSectionBody) + " " +
+					OutputSpeech: plainText(bodyPart + " " +
 						l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 							ID:    "ShouldIContinue",
 							Other: "Soll ich noch weiterlesen?",
