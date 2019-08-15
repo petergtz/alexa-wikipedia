@@ -276,7 +276,8 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				return resp
 			}
 
-			newPosition, newPositionWithinSectionBody := h.bodyChopper.MoveToNextBodyPart(page.Body,
+			newPosition, newPositionWithinSectionBody := h.bodyChopper.MoveToNextBodyPart(
+				page.TextForPosition(int(requestEnv.Session.Attributes["position"].(float64))),
 				int(requestEnv.Session.Attributes["position"].(float64)),
 				int(requestEnv.Session.Attributes["position_within_section_body"].(float64)))
 
@@ -322,7 +323,8 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			if resp != nil {
 				return resp
 			}
-			newPosition, newPositionWithinSectionBody := h.bodyChopper.MoveToNextBodyPart(page.Body,
+			newPosition, newPositionWithinSectionBody := h.bodyChopper.MoveToNextBodyPart(
+				page.TextForPosition(int(requestEnv.Session.Attributes["position"].(float64))),
 				int(requestEnv.Session.Attributes["position"].(float64)),
 				int(requestEnv.Session.Attributes["position_within_section_body"].(float64)))
 

@@ -1,0 +1,46 @@
+{
+    "version": "1.0",
+    "session": {
+        "new": false,
+        "sessionId": "xxx",
+        "application": {
+            "applicationId": "xxx"
+        },
+		"attributes": {
+			"position": 7,
+			"position_within_section_body": 0,
+			"word": "Volkswagen",
+			"last_question": "should_continue"
+		},
+        "user": {
+            "userId": "xxx"
+        }
+    },
+    "context": {
+        "System": {
+            "application": {
+                "applicationId": "xxx"
+            },
+            "user": {
+                "userId": "xxx"
+            },
+            "device": {
+                "deviceId": "xxx",
+                "supportedInterfaces": {}
+            },
+            "apiEndpoint": "https://api.eu.amazonalexa.com",
+            "apiAccessToken": "xxx"
+        }
+    },
+    "request": {
+        "type": "IntentRequest",
+        "requestId": "xxx",
+        "timestamp": "TIMESTAMP",
+        "locale": "en-US",
+		"intent": {
+			"name": "AMAZON.YesIntent",
+			"confirmationStatus": "NONE"
+		},
+		"dialogState": "STARTED"
+    }
+}
