@@ -140,3 +140,8 @@ func (p Page) Toc(localizer *locale.Localizer) string {
 	}
 	return s
 }
+
+type BodyChopper interface {
+	MoveToNextBodyPart(body string, currentPosition int, currentPositionWithinSectionBody int) (newPosition int, newPositionWithinSectionBody int)
+	FetchBodyPart(body string, currentPositionWithinSectionBody int) string
+}

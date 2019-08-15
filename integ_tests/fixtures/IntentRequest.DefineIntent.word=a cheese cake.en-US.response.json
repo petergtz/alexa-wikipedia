@@ -3,6 +3,7 @@
     "sessionAttributes": {
       "last_question": "should_continue",
       "position": 0,
+      "position_within_section_body": 0,
       "word": "a cheese cake"
     },
     "response": {

@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/petergtz/alexa-wikipedia/bodychoppers/dumb"
+	"github.com/petergtz/alexa-wikipedia/bodychoppers/paragraph"
+
 	"go.uber.org/zap"
 
 	"github.com/BurntSushi/toml"
@@ -78,6 +81,12 @@ func main() {
 				wiki:               &mediawiki.MediaWiki{},
 				interactionLogger:  interactionLogger,
 				interactionHistory: interactionLogger,
+				bodyChopper: &paragraph.BodyChopper{
+					MaxBodyPartLen: 6000,
+					Fallback: dumb.BodyChopper{
+						MaxBodyPartLen: 6000,
+					},
+				},
 			},
 			interactionLogger,
 			func(requestEnv *alexa.RequestEnvelope) bool {
@@ -126,6 +135,7 @@ type WikipediaSkill struct {
 	i18nBundle         *i18n.Bundle
 	interactionLogger  alexa.InteractionLogger
 	interactionHistory alexa.InteractionHistory
+	bodyChopper        wiki.BodyChopper
 }
 
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
@@ -186,7 +196,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(strings.TrimRight(definition.Body, ". ") + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+					OutputSpeech: plainText(strings.TrimRight(h.bodyChopper.FetchBodyPart(definition.Body, 0), ". ") + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID: "FurtherNavigationHints",
 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
@@ -194,9 +204,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					}})),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":          intent.Slots["word"].Value,
-					"position":      0,
-					"last_question": "should_continue",
+					"word":                         intent.Slots["word"].Value,
+					"position":                     0,
+					"position_within_section_body": 0,
+					"last_question":                "should_continue",
 				},
 			}
 		case "SpellIntent":
@@ -236,7 +247,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			}))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(strings.TrimRight(definition.Body, ". ") + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+					OutputSpeech: plainText(strings.TrimRight(h.bodyChopper.FetchBodyPart(definition.Body, 0), ". ") + ". " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID: "FurtherNavigationHints",
 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
@@ -244,9 +255,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					}})),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":          assembledSearchQuery,
-					"position":      0,
-					"last_question": "should_continue",
+					"word":                         assembledSearchQuery,
+					"position":                     0,
+					"position_within_section_body": 0,
+					"last_question":                "should_continue",
 				},
 			}
 		case "AMAZON.YesIntent", "AMAZON.ResumeIntent":
@@ -263,19 +275,24 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			if resp != nil {
 				return resp
 			}
-			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
+
+			newPosition, newPositionWithinSectionBody := h.bodyChopper.MoveToNextBodyPart(page.Body,
+				int(requestEnv.Session.Attributes["position"].(float64)),
+				int(requestEnv.Session.Attributes["position_within_section_body"].(float64)))
+
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.TextForPosition(newPosition) + " " +
+					OutputSpeech: plainText(h.bodyChopper.FetchBodyPart(page.TextForPosition(newPosition), newPositionWithinSectionBody) + " " +
 						l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 							ID:    "ShouldIContinue",
 							Other: "Soll ich noch weiterlesen?",
 						}})),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":          requestEnv.Session.Attributes["word"],
-					"position":      newPosition,
-					"last_question": "should_continue",
+					"word":                         requestEnv.Session.Attributes["word"],
+					"position":                     newPosition,
+					"position_within_section_body": newPositionWithinSectionBody,
+					"last_question":                "should_continue",
 				},
 			}
 		case "AMAZON.RepeatIntent":
@@ -283,19 +300,21 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			if resp != nil {
 				return resp
 			}
-			newPosition := int(requestEnv.Session.Attributes["position"].(float64))
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.TextForPosition(newPosition) +
+					OutputSpeech: plainText(h.bodyChopper.FetchBodyPart(
+						page.TextForPosition(int(requestEnv.Session.Attributes["position"].(float64))),
+						int(requestEnv.Session.Attributes["position_within_section_body"].(float64))) +
 						" " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID:    "ShouldIContinue",
 						Other: "Soll ich noch weiterlesen?",
 					}})),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":          requestEnv.Session.Attributes["word"],
-					"position":      newPosition,
-					"last_question": "should_continue",
+					"word":                         requestEnv.Session.Attributes["word"],
+					"position":                     requestEnv.Session.Attributes["position"],
+					"position_within_section_body": requestEnv.Session.Attributes["position_within_section_body"],
+					"last_question":                "should_continue",
 				},
 			}
 		case "AMAZON.NextIntent":
@@ -303,19 +322,23 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			if resp != nil {
 				return resp
 			}
-			newPosition := int(requestEnv.Session.Attributes["position"].(float64)) + 1
+			newPosition, newPositionWithinSectionBody := h.bodyChopper.MoveToNextBodyPart(page.Body,
+				int(requestEnv.Session.Attributes["position"].(float64)),
+				int(requestEnv.Session.Attributes["position_within_section_body"].(float64)))
+
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(page.TextForPosition(newPosition) + " " +
+					OutputSpeech: plainText(h.bodyChopper.FetchBodyPart(page.TextForPosition(newPosition), newPositionWithinSectionBody) + " " +
 						l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 							ID:    "ShouldIContinue",
 							Other: "Soll ich noch weiterlesen?",
 						}})),
 				},
 				SessionAttributes: map[string]interface{}{
-					"word":          requestEnv.Session.Attributes["word"],
-					"position":      newPosition,
-					"last_question": "should_continue",
+					"word":                         requestEnv.Session.Attributes["word"],
+					"position":                     newPosition,
+					"position_within_section_body": newPositionWithinSectionBody,
+					"last_question":                "should_continue",
 				},
 			}
 		case "AMAZON.NoIntent":
@@ -370,6 +393,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			if s == "" {
 				s, position = page.TextAndPositionFromSectionName(sectionTitleOrNumber, l)
 			}
+			s = h.bodyChopper.FetchBodyPart(s, 0)
 			lastQuestion := ""
 			if s != "" {
 				s += " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
@@ -391,9 +415,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{OutputSpeech: plainText(s)},
 				SessionAttributes: map[string]interface{}{
-					"word":          requestEnv.Session.Attributes["word"],
-					"position":      position,
-					"last_question": lastQuestion,
+					"word":                         requestEnv.Session.Attributes["word"],
+					"position":                     position,
+					"position_within_section_body": 0,
+					"last_question":                lastQuestion,
 				},
 			}
 		case "AMAZON.HelpIntent":
