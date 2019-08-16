@@ -2,8 +2,10 @@ package main_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -21,6 +23,7 @@ import (
 )
 
 func TestEndToEnd(t *testing.T) {
+	rand.Seed(time.Now().Unix())
 	gomega.RegisterFailHandler(ginkgo.Fail)
 	ginkgo.RunSpecs(t, "EndToEnd")
 }
@@ -112,7 +115,10 @@ func readerFrom(fixturename string) io.Reader {
 	_, filename, _, _ := runtime.Caller(0)
 	buf, e := ioutil.ReadFile(filepath.Join(filepath.Dir(filename), "fixtures", fixturename))
 	Expect(e).NotTo(HaveOccurred())
-	return bytes.NewReader(bytes.Replace(buf, []byte("TIMESTAMP"), []byte(time.Now().UTC().Format("2006-01-02T15:04:05Z")), -1))
+	buf = bytes.Replace(buf, []byte("TIMESTAMP"), []byte(time.Now().UTC().Format("2006-01-02T15:04:05Z")), -1)
+	// This is necessary to avoid the skill to ask the user if Alexa understood her right, due to repeated same queries:
+	buf = bytes.Replace(buf, []byte(`"userId": "xxx"`), []byte(fmt.Sprintf(`"userId": "%v"`, rand.Int())), -1)
+	return bytes.NewReader(buf)
 }
 
 func stringFrom(fixturename string) string {

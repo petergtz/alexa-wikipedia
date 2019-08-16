@@ -19,6 +19,7 @@ FallbackText = "Meine Enzyklopädie kann hiermit nicht weiterhelfen. Aber Du kan
 CouldNotFindSpelledTerm = "Den buchstabierten Begriff {{.SpelledTerm}} konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff."
 InternalError = "Es ist ein interner Fehler aufgetreten bei der Benutzung von Wikipedia."
 EndOfArticle = "Oh! Wir sind bereits am Ende angelangt. Wenn Du noch einen weiteren Artikel vorgelesen kriegen möchtest, sage z.B. \"Suche nach Elefant\"."
+SpellingHint = "Ich habe den Artikel, \"{{.Title}}\", gerade erst gelesen. Falls ich nicht Deinen gewünschten Artikel gefunden habe, unterbrich mich und sage: \"Alexa, Suche buchstabieren\", um Deine Suchanfrage zu buchstabieren. Hier ist der Artikel:"
 `)
 
 	EnUs = []byte(`
@@ -39,5 +40,6 @@ FallbackText = "My encyclopdia cannot help with that. But you could e.g. search 
 CouldNotFindSpelledTerm = "I could not find the spelled term {{.SpelledTerm}} on Wikipedia. Why don't you a try a different term?"
 InternalError = "An internal error occurred while using My encyclopdia."
 EndOfArticle = "Oh, we've already reached the end of the article. Why don't you try a different search. E.g. say \"What is an elephant\""
+SpellingHint = "I've just read the article \"{{.Title}}\" already. Did I not find what you were looking for? If so, interrupt me and say \"Alexa, spell search\" to spell your search query. Here's the article:"
 `)
 )
