@@ -3,7 +3,8 @@ module github.com/petergtz/alexa-wikipedia
 go 1.12
 
 require (
-	github.com/BurntSushi/toml v0.3.0
+	github.com/BurntSushi/toml v0.3.1
+	github.com/aws/aws-lambda-go v1.13.2
 	github.com/aws/aws-sdk-go v1.19.42
 	github.com/facebookarchive/muster v0.0.0-20150708232844-fd3d7953fd52
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect

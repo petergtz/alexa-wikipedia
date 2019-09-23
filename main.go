@@ -3,9 +3,7 @@ package main
 import (
 	"bytes"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +17,10 @@ import (
 
 	"golang.org/x/text/language"
 
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	awsdyndb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	. "github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
@@ -43,91 +45,37 @@ func main() {
 	i18nBundle.MustParseMessageFileBytes(locale.DeDe, "active.de.toml")
 	i18nBundle.MustParseMessageFileBytes(locale.EnUs, "active.en.toml")
 
-	var e error
-	skipRequestValidation := false
-	if os.Getenv("SKILL_SKIP_REQUEST_VALIDATION") != "" {
-		skipRequestValidation, e = strconv.ParseBool(os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
-		if e != nil {
-			logger.Fatalw("Invalid env var SKILL_SKIP_REQUEST_VALIDATION", "value", os.Getenv("SKILL_SKIP_REQUEST_VALIDATION"))
-		}
-		if skipRequestValidation {
-			logger.Info("Skipping request validation. THIS SHOULD ONLY BE USED IN TESTING")
-		}
-	}
-
-	if os.Getenv("APPLICATION_ID") == "" {
-		logger.Fatal("env var APPLICATION_ID not provided.")
-	}
-
-	if os.Getenv("ACCESS_KEY_ID") == "" {
-		logger.Fatal("env var ACCESS_KEY_ID not provided.")
-	}
-
-	if os.Getenv("SECRET_ACCESS_KEY") == "" {
-		logger.Fatal("env var SECRET_ACCESS_KEY not provided.")
-	}
-
 	tableName := "AlexaWikipediaRequests"
 	if os.Getenv("TABLE_NAME_OVERRIDE") != "" {
 		tableName = os.Getenv("TABLE_NAME_OVERRIDE")
 		logger.Infow("Using DynamoDB table override", "table", tableName)
 	}
 
-	interactionLogger := dynamodb.NewInteractionLogger(os.Getenv("ACCESS_KEY_ID"), os.Getenv("SECRET_ACCESS_KEY"), "eu-central-1", logger, tableName)
-	handler := &alexa.Handler{
-		Skill: decorator.ForSkillWithInteractionLogging(
-			&WikipediaSkill{
-				i18nBundle:         i18nBundle,
-				wiki:               &mediawiki.MediaWiki{},
-				interactionLogger:  interactionLogger,
-				interactionHistory: interactionLogger,
-				bodyChopper: &paragraph.BodyChopper{
+	interactionLogger := dynamodb.NewInteractionLogger(
+		awsdyndb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-central-1")}))),
+		logger,
+		tableName)
+	skill := decorator.ForSkillWithInteractionLogging(
+		&WikipediaSkill{
+			i18nBundle:         i18nBundle,
+			wiki:               &mediawiki.MediaWiki{},
+			interactionLogger:  interactionLogger,
+			interactionHistory: interactionLogger,
+			bodyChopper: &paragraph.BodyChopper{
+				MaxBodyPartLen: 6000,
+				Fallback: dumb.BodyChopper{
 					MaxBodyPartLen: 6000,
-					Fallback: dumb.BodyChopper{
-						MaxBodyPartLen: 6000,
-					},
 				},
 			},
-			interactionLogger,
-			func(requestEnv *alexa.RequestEnvelope) bool {
-				return !(requestEnv.Request.Type == "IntentRequest" && requestEnv.Request.Intent.Name == "DefineIntent")
-			},
-		),
-		Log:                   logger,
-		ExpectedApplicationID: os.Getenv("APPLICATION_ID"),
-		SkipRequestValidation: skipRequestValidation,
-	}
-	serveMux := http.NewServeMux()
-	serveMux.HandleFunc("/", handler.Handle)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		logger.Fatal("No env variable PORT specified")
-	}
-	addr := os.Getenv("SKILL_ADDR")
-	if addr == "" {
-		addr = "0.0.0.0"
-		logger.Infow("No SKILL_ADDR provided. Using default.", "addr", addr)
-	} else {
-		logger.Infow("SKILL_ADDR provided.", "addr", addr)
-	}
-
-	httpServer := &http.Server{
-		Handler:      serveMux,
-		Addr:         addr + ":" + port,
-		WriteTimeout: 60 * time.Minute,
-		ReadTimeout:  60 * time.Minute,
-		ErrorLog:     NewStdLog(l),
-	}
-
-	if os.Getenv("SKILL_USE_TLS") == "true" {
-		logger.Infow("Starting webserver", "use-tls", true, "cert-path", os.Getenv("CERT"), "key-path", os.Getenv("KEY"), "port", port, "address", addr)
-		e = httpServer.ListenAndServeTLS(os.Getenv("CERT"), os.Getenv("KEY"))
-	} else {
-		logger.Infow("Starting webserver", "use-tls", false, "port", port, "address", addr)
-		e = httpServer.ListenAndServe()
-	}
-	logger.Fatal(e)
+		},
+		interactionLogger,
+		func(requestEnv *alexa.RequestEnvelope) bool {
+			return !(requestEnv.Request.Type == "IntentRequest" && requestEnv.Request.Intent.Name == "DefineIntent")
+		},
+	)
+	lambda.Start(func(requestEnv alexa.RequestEnvelope) (alexa.ResponseEnvelope, error) {
+		return *skill.ProcessRequest(&requestEnv), nil
+	})
 }
 
 type WikipediaSkill struct {
