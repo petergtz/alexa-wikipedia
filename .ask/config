@@ -1,0 +1,34 @@
+{
+  "deploy_settings": {
+    "default": {
+      "skill_id": "amzn1.ask.skill.101a1dcb-ce70-4fd6-ae01-6a8803f727ff",
+      "was_cloned": false,
+      "merge": {},
+      "resources": {
+        "manifest": {
+          "eTag": "4003183790fbc141034830bf1a8cf3ce"
+        },
+        "interactionModel": {
+          "de-DE": {
+            "eTag": "54858fbb0cad1081351bd43d70f7a028"
+          },
+          "en-US": {
+            "eTag": "cbfcb75eee1234936199e4a92f8c7055"
+          },
+          "en-CA": {
+            "eTag": "cbfcb75eee1234936199e4a92f8c7055"
+          },
+          "en-IN": {
+            "eTag": "cbfcb75eee1234936199e4a92f8c7055"
+          },
+          "en-AU": {
+            "eTag": "cbfcb75eee1234936199e4a92f8c7055"
+          },
+          "en-GB": {
+            "eTag": "cbfcb75eee1234936199e4a92f8c7055"
+          }
+        }
+      }
+    }
+  }
+}

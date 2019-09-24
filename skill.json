@@ -1,0 +1,157 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {
+        "regions": {
+          "NA": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-east-1:512841817041:function:AlexaWikipedia:2"
+            }
+          },
+          "EU": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:eu-west-1:512841817041:function:AlexaWikipedia:2"
+            }
+          },
+          "FE": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:ap-northeast-1:512841817041:function:AlexaWikipedia:2"
+            }
+          }
+        },
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:512841817041:function:AlexaWikipedia:2"
+        },
+        "interfaces": []
+      }
+    },
+    "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "locales": {
+        "de-DE": {
+          "privacyPolicyUrl": ""
+        },
+        "en-GB": {},
+        "en-US": {},
+        "en-CA": {},
+        "en-AU": {},
+        "en-IN": {}
+      },
+      "allowsPurchases": false,
+      "usesPersonalInfo": false,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "containsAds": false
+    },
+    "publishingInformation": {
+      "locales": {
+        "de-DE": {
+          "name": "Meine Enzyklopädie",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/567e/c8a1be92e98949e58054e6b95ce76f82/APP_ICON?versionId=0exXLg0Db8AFwmXGJDqdJC5yVJiBY6U.&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=2ff7d100f3be50e6a4396a7a331d6a16706ae3363135aa196b4557a70ace93a9",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/728f/b884426e13c6482fb6bb1e0da6f0271f/APP_ICON_LARGE?versionId=WF8qXtj1Wi.771zLr1YooIzIxtN1sAym&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=b4738dea1e790d3385f77e706ff1de040445725d0a7a1759778eb24aea464046",
+          "summary": "Macht Wikipedia für Alexa verfügbar.",
+          "description": "Dieser Skill lässt Benutzer auf den vollständigen Inhalt von Wikipedia zugreifen. Dabei liest Alexa nicht nur die Zusammenfassung eines Artikels vor, sondern lässt den Benutzer gezielt durch den kompletten Artikel navigieren und liest alle Abschnitte vor.\n\nDieser Skill ist kein \"offizieller\" Skill und steht in keinem Zusammenhang mit der Wikimedia Foundation. Er benutzt lediglich die von Wikimedia zur Verfügung gestellte API für Wikipedia.\n\nAnfragen für neue Features bzw. Rückmeldung von Dingen, die verbessert werden könnten, bitte auf https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, öffne meine Enzyklopädie und suche nach Käsekuchen.",
+            "Alexa, öffne meine Enzyklopädie.",
+            "Was ist Käsekuchen?"
+          ],
+          "keywords": [
+            "Wikipedia",
+            "Enzyklopädie"
+          ],
+          "updatesDescription": "Man kann seine Suche bei Wikipedia jetzt auch buchstabieren indem man z.B. sagt \"Suchbegriff buchstabieren\"."
+        },
+        "en-US": {
+          "name": "My Encyclopedia",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/83a2/5dbe212ccb884a92bc2ffabc533cc27c/APP_ICON?versionId=r4wW8uq4fKqKGJNL0p9uHSZVkTRa_zIf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=e5bbbecb41c9018b33f9a93983a7786917c538f3540661acd04199edace7daee",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/418d/28dd29167aeb4e129e62d418414dae7a/APP_ICON_LARGE?versionId=zkW9_TJ4sLrpGzX3EWt6zo5wki448brL&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=01efd9a72d1416a5a8d6200b5df494d5621a6847d83cb2c9cea49afd3e62c284",
+          "summary": "Makes Wikipedia available to Alexa.",
+          "description": "This skill lets users access the full content of Wikipedia. Alexa will not only read the introduction paragraph, but instead lets the user navigate through the full article and reads all sections.\n\nThis skill is not the \"official\" Wikipedia skill and is in no way affiliated with the Wikimedia Foundation. It simply uses the Wikipedia API provided by Wikimedia.\n\nPlease submit feature requests or complaints on https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, open my encyclopedia and search for cheese cake.",
+            "Alexa, open my encyclopedia.",
+            "What's a cheese cake?"
+          ],
+          "keywords": [
+            "wikipedia",
+            "encyclopedia"
+          ],
+          "updatesDescription": "It's now also possible to spell the search term, e.g. by saying \"let me spell the search\"."
+        },
+        "en-CA": {
+          "name": "My Encyclopedia",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/83a2/5dbe212ccb884a92bc2ffabc533cc27c/APP_ICON?versionId=r4wW8uq4fKqKGJNL0p9uHSZVkTRa_zIf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86399&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=8033d7ab3c75954730ff96509129fd6192f4beee99f12afee65eb69582dd0eb6",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/418d/28dd29167aeb4e129e62d418414dae7a/APP_ICON_LARGE?versionId=zkW9_TJ4sLrpGzX3EWt6zo5wki448brL&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=01efd9a72d1416a5a8d6200b5df494d5621a6847d83cb2c9cea49afd3e62c284",
+          "summary": "Makes Wikipedia available to Alexa.",
+          "description": "This skill lets users access the full content of Wikipedia. Alexa will not only read the introduction paragraph, but instead lets the user navigate through the full article and reads all sections.\n\nThis skill is not the \"official\" Wikipedia skill and is in no way affiliated with the Wikimedia Foundation. It simply uses the Wikipedia API provided by Wikimedia.\n\nPlease submit feature requests or complaints on https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, open my encyclopedia and search for cheese cake.",
+            "Alexa, open my encyclopedia.",
+            "What's a cheese cake?"
+          ],
+          "keywords": [
+            "wikipedia",
+            "encyclopedia"
+          ],
+          "updatesDescription": "It's now also possible to spell the search term, e.g. by saying \"let me spell the search\"."
+        },
+        "en-IN": {
+          "name": "My Encyclopedia",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/83a2/5dbe212ccb884a92bc2ffabc533cc27c/APP_ICON?versionId=r4wW8uq4fKqKGJNL0p9uHSZVkTRa_zIf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=e5bbbecb41c9018b33f9a93983a7786917c538f3540661acd04199edace7daee",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/418d/28dd29167aeb4e129e62d418414dae7a/APP_ICON_LARGE?versionId=zkW9_TJ4sLrpGzX3EWt6zo5wki448brL&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=01efd9a72d1416a5a8d6200b5df494d5621a6847d83cb2c9cea49afd3e62c284",
+          "summary": "Makes Wikipedia available to Alexa.",
+          "description": "This skill lets users access the full content of Wikipedia. Alexa will not only read the introduction paragraph, but instead lets the user navigate through the full article and reads all sections.\n\nThis skill is not the \"official\" Wikipedia skill and is in no way affiliated with the Wikimedia Foundation. It simply uses the Wikipedia API provided by Wikimedia.\n\nPlease submit feature requests or complaints on https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, open my encyclopedia and search for cheese cake.",
+            "Alexa, open my encyclopedia.",
+            "What's a cheese cake?"
+          ],
+          "keywords": [
+            "wikipedia",
+            "encyclopedia"
+          ],
+          "updatesDescription": "It's now also possible to spell the search term, e.g. by saying \"let me spell the search\"."
+        },
+        "en-AU": {
+          "name": "My Encyclopedia",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/83a2/5dbe212ccb884a92bc2ffabc533cc27c/APP_ICON?versionId=r4wW8uq4fKqKGJNL0p9uHSZVkTRa_zIf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=e5bbbecb41c9018b33f9a93983a7786917c538f3540661acd04199edace7daee",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/418d/28dd29167aeb4e129e62d418414dae7a/APP_ICON_LARGE?versionId=zkW9_TJ4sLrpGzX3EWt6zo5wki448brL&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=01efd9a72d1416a5a8d6200b5df494d5621a6847d83cb2c9cea49afd3e62c284",
+          "summary": "Makes Wikipedia available to Alexa.",
+          "description": "This skill lets users access the full content of Wikipedia. Alexa will not only read the introduction paragraph, but instead lets the user navigate through the full article and reads all sections.\n\nThis skill is not the \"official\" Wikipedia skill and is in no way affiliated with the Wikimedia Foundation. It simply uses the Wikipedia API provided by Wikimedia.\n\nPlease submit feature requests or complaints on https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, open my encyclopedia and search for cheese cake.",
+            "Alexa, open my encyclopedia.",
+            "What's a cheese cake?"
+          ],
+          "keywords": [
+            "wikipedia",
+            "encyclopedia"
+          ],
+          "updatesDescription": "It's now also possible to spell the search term, e.g. by saying \"let me spell the search\"."
+        },
+        "en-GB": {
+          "name": "My Encyclopedia",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/b9de/3922628c727e4be0b60693cbd1c9330a/APP_ICON?versionId=NhepP3_z9zHtMOtKGCSRUyGwgLrrwAFX&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=b92f2f411b3a3813393c9ce52472aed0aa6892bf9b482b03f32a762eef428132",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/660b/af5874ae80844a73bc5ab3bad95144fb/APP_ICON_LARGE?versionId=zJESON3aJ.ZmivO3.1UxqAxArlc2hLJ3&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=863d76def7276fb257ddf7750882e34ee0f4b6758be90f1521987c383d1e0e03",
+          "summary": "Makes Wikipedia available to Alexa.",
+          "description": "This skill lets users access the full content of Wikipedia. Alexa will not only read the introduction paragraph, but instead lets the user navigate through the full article and reads all sections.\n\nThis skill is not the \"official\" Wikipedia skill and is in no way affiliated with the Wikimedia Foundation. It simply uses the Wikipedia API provided by Wikimedia.\n\nPlease submit feature requests or complaints on https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, open my encyclopedia and search for cheese cake.",
+            "Alexa, open my encyclopedia.",
+            "What's a cheese cake?"
+          ],
+          "keywords": [
+            "wikipedia",
+            "encyclopedia"
+          ],
+          "updatesDescription": "It's now also possible to spell the search term, e.g. by saying \"let me spell the search\"."
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "None so far.",
+      "category": "EDUCATION_AND_REFERENCE",
+      "distributionCountries": []
+    }
+  }
+}

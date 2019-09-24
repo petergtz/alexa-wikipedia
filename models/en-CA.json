@@ -1,0 +1,189 @@
+{
+  "interactionModel": {
+      "languageModel": {
+          "invocationName": "my encyclopedia",
+          "intents": [
+              {
+                  "name": "AMAZON.CancelIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.HelpIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.StopIntent",
+                  "samples": []
+              },
+              {
+                  "name": "DefineIntent",
+                  "slots": [
+                      {
+                          "name": "word",
+                          "type": "AMAZON.SearchQuery"
+                      }
+                  ],
+                  "samples": [
+                      "define {word}",
+                      "define the expression {word}",
+                      "define the meaning of {word}",
+                      "define the term {word}",
+                      "define the word {word}",
+                      "find {word}",
+                      "find the expression {word}",
+                      "find the meaning of {word}",
+                      "find the term {word}",
+                      "for {word}",
+                      "for expression {word}",
+                      "for term {word}",
+                      "for the definition of {word}",
+                      "for the expression {word}",
+                      "for the meaning of {word}",
+                      "for the term {word}",
+                      "for the word {word}",
+                      "how to {word}",
+                      "search for {word}",
+                      "search for the expression {word}",
+                      "search for the term {word}",
+                      "search for the word {word}",
+                      "show me {word}",
+                      "show me the {word}",
+                      "show me the expression {word}",
+                      "show me the meaning of {word}",
+                      "show me the term {word}",
+                      "to define {word}",
+                      "to define the expression {word}",
+                      "to define the term {word}",
+                      "to define the word {word}",
+                      "what is {word}",
+                      "what is the definition of {word}",
+                      "what is the meaning of {word}",
+                      "what's {word}",
+                      "when is {word}",
+                      "when was {word}",
+                      "when were {word}",
+                      "where is {word}",
+                      "where was {word}",
+                      "which is {word}",
+                      "which was {word}",
+                      "who is {word}",
+                      "who was {word}",
+                      "who were {word}"
+                  ]
+              },
+              {
+                  "name": "AMAZON.YesIntent",
+                  "samples": []
+              },
+              {
+                  "name": "TocIntent",
+                  "slots": [],
+                  "samples": [
+                      "table of contents"
+                  ]
+              },
+              {
+                  "name": "AMAZON.RepeatIntent",
+                  "samples": []
+              },
+              {
+                  "name": "GoToSectionIntent",
+                  "slots": [
+                      {
+                          "name": "section_title_or_number",
+                          "type": "AMAZON.SearchQuery"
+                      }
+                  ],
+                  "samples": [
+                      "go to {section_title_or_number}",
+                      "go to section {section_title_or_number}",
+                      "jump to {section_title_or_number}",
+                      "jump to section {section_title_or_number}",
+                      "section {section_title_or_number}"
+                  ]
+              },
+              {
+                  "name": "AMAZON.ResumeIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.NextIntent",
+                  "samples": [
+                      "next section"
+                  ]
+              },
+              {
+                  "name": "AMAZON.PauseIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.NoIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.FallbackIntent",
+                  "samples": []
+              },
+              {
+                  "name": "SpellIntent",
+                  "slots": [
+                      {
+                          "name": "spelled_term",
+                          "type": "AMAZON.SearchQuery",
+                          "samples": [
+                              "{spelled_term}"
+                          ]
+                      }
+                  ],
+                  "samples": [
+                      "I will spell",
+                      "I'll spell",
+                      "let me spell the search term",
+                      "let me spell the search",
+                      "let me spell",
+                      "spell search term",
+                      "spell search"
+                  ]
+              },
+              {
+                  "name": "AMAZON.NavigateHomeIntent",
+                  "samples": []
+              }
+          ],
+          "types": []
+      },
+      "dialog": {
+          "intents": [
+              {
+                  "name": "SpellIntent",
+                  "confirmationRequired": false,
+                  "prompts": {},
+                  "slots": [
+                      {
+                          "name": "spelled_term",
+                          "type": "AMAZON.SearchQuery",
+                          "confirmationRequired": false,
+                          "elicitationRequired": true,
+                          "prompts": {
+                              "elicitation": "Elicit.Slot.1281507882909.538083537623"
+                          }
+                      }
+                  ]
+              }
+          ],
+          "delegationStrategy": "ALWAYS"
+      },
+      "prompts": [
+          {
+              "id": "Elicit.Slot.1281507882909.538083537623",
+              "variations": [
+                  {
+                      "type": "PlainText",
+                      "value": "Okay, please spell it."
+                  }
+              ]
+          }
+      ]
+  },
+  "version": "4"
+}

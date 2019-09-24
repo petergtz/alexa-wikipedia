@@ -1,0 +1,189 @@
+{
+  "interactionModel": {
+      "languageModel": {
+          "invocationName": "meine enzyklopädie",
+          "intents": [
+              {
+                  "name": "AMAZON.CancelIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.HelpIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.StopIntent",
+                  "samples": []
+              },
+              {
+                  "name": "DefineIntent",
+                  "slots": [
+                      {
+                          "name": "word",
+                          "type": "AMAZON.SearchQuery"
+                      }
+                  ],
+                  "samples": [
+                      "{word} zu definieren",
+                      "das wort {word} zu definieren",
+                      "definiere {word}",
+                      "definiere das wort {word}",
+                      "definiere den Ausdruck {word}",
+                      "definiere den Begriff {word}",
+                      "den ausdruck {word} zu definieren",
+                      "den begriff {word} zu definieren",
+                      "find {word}",
+                      "finde {word}",
+                      "nach {word}",
+                      "nach dem ausdruck {word}",
+                      "nach dem begriff {word}",
+                      "nach dem wort {word}",
+                      "nach der Definition von {word}",
+                      "such {word}",
+                      "such nach {word}",
+                      "suche {word}",
+                      "suche nach {word}",
+                      "wann ist {word}",
+                      "wann sind {word}",
+                      "wann war {word}",
+                      "warum {word}",
+                      "was bedeutet {word}",
+                      "was bedeutet das Wort {word}",
+                      "was bedeutet der Ausdruck {word}",
+                      "was bedeutet der Begriff {word}",
+                      "was heißt {word}",
+                      "was ist {word}",
+                      "Was ist die Definition von {word}",
+                      "was sind {word}",
+                      "welcher {word}",
+                      "wer ist {word}",
+                      "wer sind {word}",
+                      "wer war {word}",
+                      "wer waren {word}",
+                      "wie {word}",
+                      "wie geht {word}",
+                      "wo {word}",
+                      "zeige {word}",
+                      "zeige mir {word}"
+                  ]
+              },
+              {
+                  "name": "AMAZON.YesIntent",
+                  "samples": []
+              },
+              {
+                  "name": "TocIntent",
+                  "slots": [],
+                  "samples": [
+                      "Inhaltsverzeichnis"
+                  ]
+              },
+              {
+                  "name": "AMAZON.RepeatIntent",
+                  "samples": []
+              },
+              {
+                  "name": "GoToSectionIntent",
+                  "slots": [
+                      {
+                          "name": "section_title_or_number",
+                          "type": "AMAZON.SearchQuery"
+                      }
+                  ],
+                  "samples": [
+                      "Abschnitt {section_title_or_number}",
+                      "Geh zu {section_title_or_number}",
+                      "Geh zu Abschnitt {section_title_or_number}",
+                      "Gehe zu {section_title_or_number}",
+                      "Gehe zu Abschnitt {section_title_or_number}",
+                      "Spring zu {section_title_or_number}",
+                      "Spring zu Abschnitt {section_title_or_number}",
+                      "Springe zu {section_title_or_number}",
+                      "Springe zu Abschnitt {section_title_or_number}"
+                  ]
+              },
+              {
+                  "name": "AMAZON.ResumeIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.NextIntent",
+                  "samples": [
+                      "Nächster Abschnitt"
+                  ]
+              },
+              {
+                  "name": "AMAZON.PauseIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.NoIntent",
+                  "samples": []
+              },
+              {
+                  "name": "SpellIntent",
+                  "slots": [
+                      {
+                          "name": "spelled_term",
+                          "type": "AMAZON.SearchQuery",
+                          "samples": [
+                              "{spelled_term}"
+                          ]
+                      }
+                  ],
+                  "samples": [
+                      "ausdruck buchstabieren",
+                      "begriff buchstabieren",
+                      "buchstabiere suchbegriff",
+                      "buchstabiere",
+                      "buchstabieren",
+                      "ich buchstabiere",
+                      "name buchstabieren",
+                      "person buchstabieren",
+                      "suchbegriff buchstabieren",
+                      "suche buchstabieren",
+                      "wort buchstabieren"
+                  ]
+              },
+              {
+                  "name": "AMAZON.NavigateHomeIntent",
+                  "samples": []
+              }
+          ],
+          "types": []
+      },
+      "dialog": {
+          "intents": [
+              {
+                  "name": "SpellIntent",
+                  "confirmationRequired": false,
+                  "prompts": {},
+                  "slots": [
+                      {
+                          "name": "spelled_term",
+                          "type": "AMAZON.SearchQuery",
+                          "confirmationRequired": false,
+                          "elicitationRequired": true,
+                          "prompts": {
+                              "elicitation": "Elicit.Slot.1281507882909.538083537623"
+                          }
+                      }
+                  ]
+              }
+          ],
+          "delegationStrategy": "ALWAYS"
+      },
+      "prompts": [
+          {
+              "id": "Elicit.Slot.1281507882909.538083537623",
+              "variations": [
+                  {
+                      "type": "PlainText",
+                      "value": "Okay, buchstabiere deinen suchbegriff"
+                  }
+              ]
+          }
+      ]
+  },
+  "version": "6"
+}

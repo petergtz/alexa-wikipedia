@@ -17,7 +17,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.0.0
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
-	github.com/petergtz/go-alexa v0.0.0-20190605153550-89ab2ef04e46
+	github.com/petergtz/go-alexa v0.0.0-20190923210702-bbabef0d3c17
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/math v0.0.0-20141027224758-f2ed9e40e245
 	go.uber.org/atomic v1.3.2 // indirect
