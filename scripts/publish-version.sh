@@ -28,3 +28,5 @@ while true; do
 done
 
 ask deploy --force --target skill
+
+rm -rf hooks
