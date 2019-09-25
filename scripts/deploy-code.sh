@@ -4,7 +4,7 @@ cd $(dirname $0)/..
 
 go build -o main
 
-rm -f main.zip
+rm -f alexa-wikipedia.zip
 zip alexa-wikipedia.zip main
 
 aws s3 cp alexa-wikipedia.zip s3://alexa-golang-skills/alexa-wikipedia.zip
