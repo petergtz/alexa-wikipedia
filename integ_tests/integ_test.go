@@ -13,11 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
-	. "github.com/petergtz/alexa-wikipedia/skill"
+	"github.com/petergtz/alexa-wikipedia/cmd/skill/factory"
 	"github.com/petergtz/go-alexa"
 )
 
@@ -31,7 +33,9 @@ var skill alexa.Skill
 
 var _ = Describe("Skill", func() {
 	BeforeSuite(func() {
-		skill = CreateSkill()
+		logger, e := zap.NewDevelopment()
+		Expect(e).NotTo(HaveOccurred())
+		skill = factory.CreateSkill(logger.Sugar())
 	})
 
 	_, filename, _, _ := runtime.Caller(0)

@@ -5,22 +5,22 @@
         "regions": {
           "NA": {
             "endpoint": {
-              "uri": "arn:aws:lambda:us-east-1:512841817041:function:AlexaWikipedia:4"
+              "uri": "arn:aws:lambda:us-east-1:512841817041:function:AlexaWikipedia:5"
             }
           },
           "EU": {
             "endpoint": {
-              "uri": "arn:aws:lambda:eu-west-1:512841817041:function:AlexaWikipedia:4"
+              "uri": "arn:aws:lambda:eu-west-1:512841817041:function:AlexaWikipedia:5"
             }
           },
           "FE": {
             "endpoint": {
-              "uri": "arn:aws:lambda:ap-northeast-1:512841817041:function:AlexaWikipedia:4"
+              "uri": "arn:aws:lambda:ap-northeast-1:512841817041:function:AlexaWikipedia:5"
             }
           }
         },
         "endpoint": {
-          "uri": "arn:aws:lambda:us-east-1:512841817041:function:AlexaWikipedia:4"
+          "uri": "arn:aws:lambda:us-east-1:512841817041:function:AlexaWikipedia:5"
         },
         "interfaces": []
       }

@@ -9,14 +9,17 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 
 	"github.com/petergtz/alexa-wikipedia/locale"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
 type MediaWiki struct {
+	Logger *zap.SugaredLogger
 }
 
 type Page struct {
@@ -60,7 +63,7 @@ type SearchQuery struct {
 
 func (mw *MediaWiki) GetPage(word string, localizer *locale.Localizer) (wiki.Page, error) {
 	var extract ExtractQuery
-	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true", &extract)
+	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true", &extract, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -72,7 +75,7 @@ func (mw *MediaWiki) GetPage(word string, localizer *locale.Localizer) (wiki.Pag
 
 func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.Page, error) {
 	var search SearchQuery
-	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&list=search&srsearch="+url.QueryEscape(word)+"&srprop=&utf8=", &search)
+	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&list=search&srsearch="+url.QueryEscape(word)+"&srprop=&utf8=", &search, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -81,7 +84,7 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 	}
 
 	var extract ExtractQuery
-	e = makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&pageids="+strconv.Itoa(search.Query.Search[0].Pageid)+"&redirects=true&formatversion=2&explaintext=true", &extract)
+	e = makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&pageids="+strconv.Itoa(search.Query.Search[0].Pageid)+"&redirects=true&formatversion=2&explaintext=true", &extract, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -92,7 +95,9 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 
 }
 
-func makeJsonRequest(url string, data interface{}) error {
+func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) error {
+	startTime := time.Now()
+	defer logger.Infow("makeJsonRequest", "duration", time.Since(startTime).String())
 	r, e := http.Get(url)
 	if e != nil {
 		return errors.Wrapf(e, "Could not request url: \"%v\"", url)

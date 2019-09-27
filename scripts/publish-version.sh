@@ -6,7 +6,7 @@ for region in 'us-east-1' 'eu-west-1' 'ap-northeast-1'; do
     output=$(aws --region $region lambda publish-version --function-name AlexaWikipedia)
     echo $output
     version=$(echo $output | jq -r .Version)
-    sed -E -i "s/(arn:aws:lambda:$region:512841817041:function:AlexaWikipedia:)([0-9]+)/\1$version/g" skill.json
+    sed -E -i "s/(arn:aws:lambda:$region:512841817041:function:AlexaWikipedia)(:?[0-9]*)/\1:$version/g" skill.json
 
     aws --region $region lambda add-permission \
       --function-name AlexaWikipedia:$version \
@@ -27,6 +27,6 @@ while true; do
     esac
 done
 
-ask deploy --force --target skill
+ask deploy --target skill
 
 rm -rf hooks

@@ -26,7 +26,7 @@ var _ = Describe("Mediawiki", func() {
 	})
 
 	It("returns the page even when it's not an exact match", func() {
-		page, e := (&mediawiki.MediaWiki{}).SearchPage("Der Baum", localizer)
+		page, e := (&mediawiki.MediaWiki{logger.Sugar()}).SearchPage("Der Baum", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Baum"))
 	})

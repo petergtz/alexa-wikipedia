@@ -1,77 +1,19 @@
-package factory
+package skill
 
 import (
-	"bytes"
-	"log"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/petergtz/alexa-wikipedia/bodychoppers/dumb"
 	"github.com/petergtz/alexa-wikipedia/bodychoppers/paragraph"
-
+	"github.com/petergtz/alexa-wikipedia/locale"
 	"go.uber.org/zap"
 
-	"github.com/BurntSushi/toml"
-	"github.com/petergtz/alexa-wikipedia/locale"
-
-	"golang.org/x/text/language"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	awsdyndb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	. "github.com/nicksnyder/go-i18n/v2/i18n"
-	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/petergtz/alexa-wikipedia/wiki"
 	"github.com/petergtz/go-alexa"
-	"github.com/petergtz/go-alexa/decorator"
-	"github.com/petergtz/go-alexa/dynamodb"
 )
-
-var logger *zap.SugaredLogger
-
-func CreateSkill() *decorator.InteractionLoggingSkill {
-	l := createLoggerWith("debug")
-	defer l.Sync()
-	logger = l.Sugar()
-
-	i18nBundle := i18n.NewBundle(language.English)
-	i18nBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-
-	i18nBundle.MustParseMessageFileBytes(locale.DeDe, "active.de.toml")
-	i18nBundle.MustParseMessageFileBytes(locale.EnUs, "active.en.toml")
-
-	tableName := "AlexaWikipediaRequests"
-	if os.Getenv("TABLE_NAME_OVERRIDE") != "" {
-		tableName = os.Getenv("TABLE_NAME_OVERRIDE")
-		logger.Infow("Using DynamoDB table override", "table", tableName)
-	}
-
-	interactionLogger := dynamodb.NewInteractionLogger(
-		awsdyndb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-central-1")}))),
-		logger,
-		tableName)
-
-	return decorator.ForSkillWithInteractionLogging(
-		&WikipediaSkill{
-			i18nBundle:         i18nBundle,
-			wiki:               &mediawiki.MediaWiki{},
-			interactionLogger:  interactionLogger,
-			interactionHistory: interactionLogger,
-			bodyChopper: &paragraph.BodyChopper{
-				MaxBodyPartLen: 6000,
-				Fallback: dumb.BodyChopper{
-					MaxBodyPartLen: 6000,
-				},
-			},
-		},
-		interactionLogger,
-		func(requestEnv *alexa.RequestEnvelope) bool {
-			return !(requestEnv.Request.Type == "IntentRequest" && requestEnv.Request.Intent.Name == "DefineIntent")
-		},
-	)
-}
 
 type WikipediaSkill struct {
 	wiki               wiki.Wiki
@@ -79,12 +21,33 @@ type WikipediaSkill struct {
 	interactionLogger  alexa.InteractionLogger
 	interactionHistory alexa.InteractionHistory
 	bodyChopper        wiki.BodyChopper
+	logger             *zap.SugaredLogger
+}
+
+func NewWikipediaSkill(
+	wiki wiki.Wiki,
+	i18nBundle *i18n.Bundle,
+	interactionLogger alexa.InteractionLogger,
+	interactionHistory alexa.InteractionHistory,
+	logger *zap.SugaredLogger,
+) *WikipediaSkill {
+	return &WikipediaSkill{
+		i18nBundle:         i18nBundle,
+		wiki:               wiki,
+		interactionLogger:  interactionLogger,
+		interactionHistory: interactionHistory,
+		bodyChopper: &paragraph.BodyChopper{
+			MaxBodyPartLen: 6000,
+			Fallback: dumb.BodyChopper{
+				MaxBodyPartLen: 6000,
+			},
+		},
+		logger: logger,
+	}
 }
 
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
-	logger.Infow("Request", "Type", requestEnv.Request.Type, "Intent", requestEnv.Request.Intent,
-		"SessionAttributes", requestEnv.Session.Attributes, "locale", requestEnv.Request.Locale)
-
+	logger := h.logger.With("alexa-request-id", requestEnv.Request.RequestID)
 	l := locale.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale, logger)
 
 	switch requestEnv.Request.Type {
@@ -240,7 +203,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					SessionAttributes: requestEnv.Session.Attributes,
 				}
 			}
-			page, resp := h.pageFromSession(requestEnv.Session, l)
+			page, resp := h.pageFromSession(requestEnv.Session, l, logger)
 			if resp != nil {
 				return resp
 			}
@@ -284,7 +247,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 			}
 		case "AMAZON.RepeatIntent":
-			page, resp := h.pageFromSession(requestEnv.Session, l)
+			page, resp := h.pageFromSession(requestEnv.Session, l, logger)
 			if resp != nil {
 				return resp
 			}
@@ -306,7 +269,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 			}
 		case "AMAZON.NextIntent":
-			page, resp := h.pageFromSession(requestEnv.Session, l)
+			page, resp := h.pageFromSession(requestEnv.Session, l, logger)
 			if resp != nil {
 				return resp
 			}
@@ -376,7 +339,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "TocIntent":
-			page, resp := h.pageFromSession(requestEnv.Session, l)
+			page, resp := h.pageFromSession(requestEnv.Session, l, logger)
 			if resp != nil {
 				return resp
 			}
@@ -391,7 +354,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				SessionAttributes: requestEnv.Session.Attributes,
 			}
 		case "GoToSectionIntent":
-			page, resp := h.pageFromSession(requestEnv.Session, l)
+			page, resp := h.pageFromSession(requestEnv.Session, l, logger)
 			if resp != nil {
 				return resp
 			}
@@ -500,35 +463,6 @@ func (h *WikipediaSkill) findDefinition(word string, l *locale.Localizer) (*wiki
 	}
 }
 
-func createLoggerWith(logLevel string) *zap.Logger {
-	loggerConfig := zap.NewProductionConfig()
-	loggerConfig.Level = zapLogLevelFrom(logLevel)
-	loggerConfig.DisableStacktrace = true
-	logger, e := loggerConfig.Build()
-	if e != nil {
-		log.Panic(e)
-	}
-	return logger
-}
-
-func zapLogLevelFrom(configLogLevel string) zap.AtomicLevel {
-	switch strings.ToLower(configLogLevel) {
-	case "", "debug":
-		return zap.NewAtomicLevelAt(zap.DebugLevel)
-	case "info":
-		return zap.NewAtomicLevelAt(zap.InfoLevel)
-	case "warn":
-		return zap.NewAtomicLevelAt(zap.WarnLevel)
-	case "error":
-		return zap.NewAtomicLevelAt(zap.ErrorLevel)
-	case "fatal":
-		return zap.NewAtomicLevelAt(zap.FatalLevel)
-	default:
-		log.Fatal("Invalid log level in config", "log-level", configLogLevel)
-		return zap.NewAtomicLevelAt(-1)
-	}
-}
-
 func isNotFoundError(e error) bool {
 	return e != nil && e.Error() == "Page not found on Wikipedia"
 }
@@ -540,7 +474,7 @@ func lastQuestionIn(session *alexa.Session) string {
 	return session.Attributes["last_question"].(string)
 }
 
-func (h *WikipediaSkill) pageFromSession(session *alexa.Session, l *locale.Localizer) (wiki.Page, *alexa.ResponseEnvelope) {
+func (h *WikipediaSkill) pageFromSession(session *alexa.Session, l *locale.Localizer, logger *zap.SugaredLogger) (wiki.Page, *alexa.ResponseEnvelope) {
 	if !wordIn(session) {
 		return wiki.Page{}, quickHelp(session.Attributes, l)
 	}
@@ -598,24 +532,4 @@ func internalError(l *locale.Localizer) *alexa.ResponseEnvelope {
 			ShouldSessionEnd: false,
 		},
 	}
-}
-
-const (
-	_stdLogDefaultDepth = 2
-	_loggerWriterDepth  = 1
-)
-
-// Copied from go.uber.org/zap/global.go and changed to use Error instead of Info:
-func NewStdLog(l *zap.Logger) *log.Logger {
-	return log.New(&loggerWriter{l.WithOptions(
-		zap.AddCallerSkip(_stdLogDefaultDepth + _loggerWriterDepth),
-	)}, "" /* prefix */, 0 /* flags */)
-}
-
-type loggerWriter struct{ logger *zap.Logger }
-
-func (l *loggerWriter) Write(p []byte) (int, error) {
-	p = bytes.TrimSpace(p)
-	l.logger.Error(string(p))
-	return len(p), nil
 }
