@@ -18,9 +18,13 @@ import (
 )
 
 var _ = Describe("Mediawiki", func() {
-	var localizer *locale.Localizer
+	var (
+		localizer *locale.Localizer
+		logger    *zap.Logger
+	)
 	BeforeEach(func() {
-		logger, e := zap.NewDevelopment()
+		var e error
+		logger, e = zap.NewDevelopment()
 		Expect(e).NotTo(HaveOccurred())
 		localizer = locale.NewLocalizer(i18n.NewBundle(language.English), "de-DE", logger.Sugar())
 	})
@@ -32,19 +36,19 @@ var _ = Describe("Mediawiki", func() {
 	})
 
 	It("returns the page when it finds it", func() {
-		page, e := (&mediawiki.MediaWiki{}).GetPage("Baum", localizer)
+		page, e := (&mediawiki.MediaWiki{logger.Sugar()}).GetPage("Baum", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Baum"))
 	})
 
 	It("returns an error when it cannot find the page", func() {
-		_, e := (&mediawiki.MediaWiki{}).GetPage("NotExistingWikiPage", localizer)
+		_, e := (&mediawiki.MediaWiki{logger.Sugar()}).GetPage("NotExistingWikiPage", localizer)
 		Expect(e).To(HaveOccurred())
 		Expect(e.Error()).To(Equal("Page not found on Wikipedia"))
 	})
 
 	It("properly escapes wearch words", func() {
-		page, e := (&mediawiki.MediaWiki{}).GetPage("Albert Einstein", localizer)
+		page, e := (&mediawiki.MediaWiki{logger.Sugar()}).GetPage("Albert Einstein", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Albert Einstein"))
 	})
