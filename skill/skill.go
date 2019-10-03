@@ -96,35 +96,38 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					},
 				}
 			}
-			if titleWasAlreadyRecentlyFound(definition.Title, h.interactionHistory.GetInteractionsByUser(requestEnv.Session.User.UserID)) {
-				return &alexa.ResponseEnvelope{Version: "1.0",
-					Response: &alexa.Response{
-						OutputSpeech: plainText(
-							l.MustLocalize(&LocalizeConfig{
-								DefaultMessage: &Message{
-									ID: "SpellingHint",
-									Other: "Ich habe den Artikel, \"{{.Title}}\", gerade erst gelesen. " +
-										"Falls ich nicht Deinen gewünschten Artikel gefunden habe, unterbrich mich und sage: " +
-										"\"Alexa, Suche buchstabieren\", um Deine Suchanfrage zu buchstabieren. Hier ist der Artikel:",
-								},
-								TemplateData: map[string]string{"Title": definition.Title},
-							}) + "\n\n" +
-								strings.TrimRight(h.bodyChopper.FetchBodyPart(definition.Body, 0), ". ") + ". " +
-								l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
-									ID: "FurtherNavigationHints",
-									Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
-										" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
-										"Soll ich zunächst einfach weiterlesen?",
-								}})),
-					},
-					SessionAttributes: map[string]interface{}{
-						"word":                         intent.Slots["word"].Value,
-						"position":                     0,
-						"position_within_section_body": 0,
-						"last_question":                "should_continue",
-					},
-				}
-			}
+			// startTime := time.Now()
+			// if titleWasAlreadyRecentlyFound(definition.Title, h.interactionHistory.GetInteractionsByUser(requestEnv.Session.User.UserID)) {
+			// 	logger.Infow("dynamodb", "duration", time.Since(startTime).String())
+			// 	return &alexa.ResponseEnvelope{Version: "1.0",
+			// 		Response: &alexa.Response{
+			// 			OutputSpeech: plainText(
+			// 				l.MustLocalize(&LocalizeConfig{
+			// 					DefaultMessage: &Message{
+			// 						ID: "SpellingHint",
+			// 						Other: "Ich habe den Artikel, \"{{.Title}}\", gerade erst gelesen. " +
+			// 							"Falls ich nicht Deinen gewünschten Artikel gefunden habe, unterbrich mich und sage: " +
+			// 							"\"Alexa, Suche buchstabieren\", um Deine Suchanfrage zu buchstabieren. Hier ist der Artikel:",
+			// 					},
+			// 					TemplateData: map[string]string{"Title": definition.Title},
+			// 				}) + "\n\n" +
+			// 					strings.TrimRight(h.bodyChopper.FetchBodyPart(definition.Body, 0), ". ") + ". " +
+			// 					l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+			// 						ID: "FurtherNavigationHints",
+			// 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
+			// 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
+			// 							"Soll ich zunächst einfach weiterlesen?",
+			// 					}})),
+			// 		},
+			// 		SessionAttributes: map[string]interface{}{
+			// 			"word":                         intent.Slots["word"].Value,
+			// 			"position":                     0,
+			// 			"position_within_section_body": 0,
+			// 			"last_question":                "should_continue",
+			// 		},
+			// 	}
+			// }
+			// logger.Infow("dynamodb", "duration", time.Since(startTime).String())
 			h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
 				"Intent":      intent.Name,
 				"SearchQuery": intent.Slots["word"].Value,
