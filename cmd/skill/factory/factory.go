@@ -27,7 +27,7 @@ import (
 
 func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 	// this is a pure priming call to make subsequent calls faster
-	http.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=a+cheese+cake&redirects=true&formatversion=2&explaintext=true")
+	go http.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=a+cheese+cake&redirects=true&formatversion=2&explaintext=true")
 
 	interactionLogger := CreateInteractionLogger(logger)
 	return decorator.ForSkillWithInteractionLogging(
@@ -57,7 +57,7 @@ func CreateInteractionLogger(logger *zap.SugaredLogger) *dynamodb.RequestLogger 
 		awsdyndb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-central-1")}))),
 		logger,
 		tableName)
-	il.GetInteractionsByUser("thisisjustaprimingcall")
+	go il.GetInteractionsByUser("thisisjustaprimingcall")
 	return il
 }
 
