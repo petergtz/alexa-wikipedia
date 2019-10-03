@@ -2,6 +2,7 @@ package skill
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/petergtz/alexa-wikipedia/bodychoppers/dumb"
@@ -69,7 +70,10 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		intent := requestEnv.Request.Intent
 		switch intent.Name {
 		case "DefineIntent":
+			logger.Debugw("DefineIntent begin")
+			startTime := time.Now()
 			definition, e := h.findDefinition(intent.Slots["word"].Value, l)
+			logger.Debugw("Definition found", "duration", time.Since(startTime).String())
 			if e != nil {
 				logger.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError(l)
@@ -444,17 +448,27 @@ func titleWasAlreadyRecentlyFound(currentTitle string, userInteractions []*alexa
 }
 
 func (h *WikipediaSkill) findDefinition(word string, l *locale.Localizer) (*wiki.Page, error) {
+	var (
+		searchResult wiki.Page
+		searchError  error
+		wg           sync.WaitGroup
+	)
+	wg.Add(1)
+	go func() {
+		searchResult, searchError = h.wiki.SearchPage(word, l)
+		wg.Done()
+	}()
 	page, e := h.wiki.GetPage(word, l)
 	switch {
 	case isNotFoundError(e):
-		page, e = h.wiki.SearchPage(word, l)
+		wg.Wait()
 		switch {
-		case isNotFoundError(e):
+		case isNotFoundError(searchError):
 			return nil, nil
-		case e != nil:
-			return nil, e
+		case searchError != nil:
+			return nil, searchError
 		default:
-			return &page, nil
+			return &searchResult, nil
 		}
 	case e != nil:
 		return nil, e

@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -75,7 +74,7 @@ func (mw *MediaWiki) GetPage(word string, localizer *locale.Localizer) (wiki.Pag
 
 func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.Page, error) {
 	var search SearchQuery
-	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&list=search&srsearch="+url.QueryEscape(word)+"&srprop=&utf8=", &search, mw.Logger)
+	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&list=search&srsearch="+url.QueryEscape(word)+"&srprop=&utf8=&srlimit=1", &search, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -96,17 +95,22 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 }
 
 func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) error {
-	startTime := time.Now()
-	defer logger.Infow("makeJsonRequest", "duration", time.Since(startTime).String())
+	logger = logger.With("url", url)
+	logger.Debug("Before http Get")
 	r, e := http.Get(url)
+	logger.Debug("After http Get")
 	if e != nil {
 		return errors.Wrapf(e, "Could not request url: \"%v\"", url)
 	}
+	logger.Debug("Before read body")
 	content, e := ioutil.ReadAll(r.Body)
+	logger.Debugw("After read body", "body-size", len(content))
 	if e != nil {
 		return errors.Wrap(e, "Could not read body of page")
 	}
+	logger.Debug("Before json Unmarhsal")
 	e = json.Unmarshal(content, data)
+	logger.Debug("After json Unmarshal")
 	if e != nil {
 		return errors.Wrapf(e, "Could not unmarshal body of page. body was: \"%v\"", content)
 	}
