@@ -2,6 +2,7 @@ package factory
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -25,6 +26,9 @@ import (
 )
 
 func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
+	// this is a pure priming call to make subsequent calls faster
+	http.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=a+cheese+cake&redirects=true&formatversion=2&explaintext=true")
+
 	interactionLogger := CreateInteractionLogger(logger)
 	return decorator.ForSkillWithInteractionLogging(
 		skill.NewWikipediaSkill(
@@ -49,11 +53,12 @@ func CreateInteractionLogger(logger *zap.SugaredLogger) *dynamodb.RequestLogger 
 		tableName = os.Getenv("TABLE_NAME_OVERRIDE")
 		logger.Infow("Using DynamoDB table override", "table", tableName)
 	}
-
-	return dynamodb.NewInteractionLogger(
+	il := dynamodb.NewInteractionLogger(
 		awsdyndb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-central-1")}))),
 		logger,
 		tableName)
+	il.GetInteractionsByUser("thisisjustaprimingcall")
+	return il
 }
 
 func CreateI18nBundle() *i18n.Bundle {
