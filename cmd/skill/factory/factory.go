@@ -2,9 +2,11 @@ package factory
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/petergtz/alexa-wikipedia/mediawiki"
 	"github.com/petergtz/alexa-wikipedia/skill"
@@ -27,7 +29,7 @@ import (
 
 func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 	// this is a pure priming call to make subsequent calls faster
-	go http.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=a+cheese+cake&redirects=true&formatversion=2&explaintext=true")
+	http.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=Keepalive&redirects=true&formatversion=2&explaintext=true&exlimit=1")
 
 	interactionLogger := CreateInteractionLogger(logger)
 	return decorator.ForSkillWithInteractionLogging(
@@ -78,7 +80,8 @@ func CreateLoggerWith(logLevel string) *zap.SugaredLogger {
 	if e != nil {
 		log.Panic(e)
 	}
-	return logger.Sugar()
+	rand.Seed(time.Now().UnixNano())
+	return logger.Sugar().With("function-instance-id", rand.Int63())
 }
 
 func zapLogLevelFrom(configLogLevel string) zap.AtomicLevel {

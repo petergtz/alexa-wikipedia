@@ -48,7 +48,7 @@ func NewWikipediaSkill(
 }
 
 func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alexa.ResponseEnvelope {
-	logger := h.logger.With("alexa-request-id", requestEnv.Request.RequestID)
+	logger := h.logger.With("alexa-request-id", requestEnv.Request.RequestID, "user-id", requestEnv.Session.User.UserID)
 	l := locale.NewLocalizer(h.i18nBundle, requestEnv.Request.Locale, logger)
 
 	switch requestEnv.Request.Type {
@@ -71,9 +71,24 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 		switch intent.Name {
 		case "DefineIntent":
 			logger.Debugw("DefineIntent begin")
+
+			var (
+				userInteractions []*alexa.Interaction
+				wg               sync.WaitGroup
+			)
+
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				logger.Debugw("Before GetInteractionsByUser")
+				startTime := time.Now()
+				userInteractions = h.interactionHistory.GetInteractionsByUser(requestEnv.Session.User.UserID, time.Now().Add(-10*time.Second))
+				logger.Debugw("After GetInteractionsByUser", "duration", time.Since(startTime).String())
+			}()
+
 			startTime := time.Now()
 			definition, e := h.findDefinition(intent.Slots["word"].Value, l)
-			logger.Debugw("Definition found", "duration", time.Since(startTime).String())
+			logger.Debugw("findDefinition finished", "duration", time.Since(startTime).String())
 			if e != nil {
 				logger.Errorw("Could not get Wikipedia page", "error", e)
 				return internalError(l)
@@ -96,38 +111,38 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 					},
 				}
 			}
-			// startTime := time.Now()
-			// if titleWasAlreadyRecentlyFound(definition.Title, h.interactionHistory.GetInteractionsByUser(requestEnv.Session.User.UserID)) {
-			// 	logger.Infow("dynamodb", "duration", time.Since(startTime).String())
-			// 	return &alexa.ResponseEnvelope{Version: "1.0",
-			// 		Response: &alexa.Response{
-			// 			OutputSpeech: plainText(
-			// 				l.MustLocalize(&LocalizeConfig{
-			// 					DefaultMessage: &Message{
-			// 						ID: "SpellingHint",
-			// 						Other: "Ich habe den Artikel, \"{{.Title}}\", gerade erst gelesen. " +
-			// 							"Falls ich nicht Deinen gewünschten Artikel gefunden habe, unterbrich mich und sage: " +
-			// 							"\"Alexa, Suche buchstabieren\", um Deine Suchanfrage zu buchstabieren. Hier ist der Artikel:",
-			// 					},
-			// 					TemplateData: map[string]string{"Title": definition.Title},
-			// 				}) + "\n\n" +
-			// 					strings.TrimRight(h.bodyChopper.FetchBodyPart(definition.Body, 0), ". ") + ". " +
-			// 					l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
-			// 						ID: "FurtherNavigationHints",
-			// 						Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
-			// 							" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
-			// 							"Soll ich zunächst einfach weiterlesen?",
-			// 					}})),
-			// 		},
-			// 		SessionAttributes: map[string]interface{}{
-			// 			"word":                         intent.Slots["word"].Value,
-			// 			"position":                     0,
-			// 			"position_within_section_body": 0,
-			// 			"last_question":                "should_continue",
-			// 		},
-			// 	}
-			// }
-			// logger.Infow("dynamodb", "duration", time.Since(startTime).String())
+			wg.Wait()
+			if titleWasAlreadyRecentlyFound(definition.Title, userInteractions) {
+				logger.Debug("title was recently found", "title", definition.Title)
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response: &alexa.Response{
+						OutputSpeech: plainText(
+							l.MustLocalize(&LocalizeConfig{
+								DefaultMessage: &Message{
+									ID: "SpellingHint",
+									Other: "Ich habe den Artikel, \"{{.Title}}\", gerade erst gelesen. " +
+										"Falls ich nicht Deinen gewünschten Artikel gefunden habe, unterbrich mich und sage: " +
+										"\"Alexa, Suche buchstabieren\", um Deine Suchanfrage zu buchstabieren. Hier ist der Artikel:",
+								},
+								TemplateData: map[string]string{"Title": definition.Title},
+							}) + "\n\n" +
+								strings.TrimRight(h.bodyChopper.FetchBodyPart(definition.Body, 0), ". ") + ". " +
+								l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+									ID: "FurtherNavigationHints",
+									Other: "Zur weiteren Navigation kannst Du jederzeit zum Inhaltsverzeichnis springen" +
+										" indem Du \"Inhaltsverzeichnis\" oder \"nächster Abschnitt\" sagst. " +
+										"Soll ich zunächst einfach weiterlesen?",
+								}})),
+					},
+					SessionAttributes: map[string]interface{}{
+						"word":                         intent.Slots["word"].Value,
+						"position":                     0,
+						"position_within_section_body": 0,
+						"last_question":                "should_continue",
+					},
+				}
+			}
+			logger.Debugw("title was not recently found", "title", definition.Title)
 			h.interactionLogger.Log(alexa.InteractionFrom(requestEnv).WithAttributes(map[string]interface{}{
 				"Intent":      intent.Name,
 				"SearchQuery": intent.Slots["word"].Value,

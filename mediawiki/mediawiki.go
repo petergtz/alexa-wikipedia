@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -62,7 +63,8 @@ type SearchQuery struct {
 
 func (mw *MediaWiki) GetPage(word string, localizer *locale.Localizer) (wiki.Page, error) {
 	var extract ExtractQuery
-	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true", &extract, mw.Logger)
+	word = strings.Title(word)
+	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -83,7 +85,7 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 	}
 
 	var extract ExtractQuery
-	e = makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&pageids="+strconv.Itoa(search.Query.Search[0].Pageid)+"&redirects=true&formatversion=2&explaintext=true", &extract, mw.Logger)
+	e = makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&pageids="+strconv.Itoa(search.Query.Search[0].Pageid)+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -97,20 +99,23 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) error {
 	logger = logger.With("url", url)
 	logger.Debug("Before http Get")
+	startTime := time.Now()
 	r, e := http.Get(url)
-	logger.Debug("After http Get")
+	logger.Debugw("After http Get", "duration", time.Since(startTime).String())
 	if e != nil {
 		return errors.Wrapf(e, "Could not request url: \"%v\"", url)
 	}
 	logger.Debug("Before read body")
+	startTime = time.Now()
 	content, e := ioutil.ReadAll(r.Body)
-	logger.Debugw("After read body", "body-size", len(content))
+	logger.Debugw("After read body", "duration", time.Since(startTime).String(), "body-size", len(content))
 	if e != nil {
 		return errors.Wrap(e, "Could not read body of page")
 	}
 	logger.Debug("Before json Unmarhsal")
+	startTime = time.Now()
 	e = json.Unmarshal(content, data)
-	logger.Debug("After json Unmarshal")
+	logger.Debugw("After json Unmarshal", "duration", time.Since(startTime).String())
 	if e != nil {
 		return errors.Wrapf(e, "Could not unmarshal body of page. body was: \"%v\"", content)
 	}
