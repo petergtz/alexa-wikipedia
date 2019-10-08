@@ -59,7 +59,7 @@ func CreateInteractionLogger(logger *zap.SugaredLogger) *dynamodb.RequestLogger 
 		awsdyndb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-central-1")}))),
 		logger,
 		tableName)
-	go il.GetInteractionsByUser("thisisjustaprimingcall")
+	// go il.GetInteractionsByUser("thisisjustaprimingcall")
 	return il
 }
 
