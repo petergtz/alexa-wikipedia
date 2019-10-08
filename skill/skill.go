@@ -473,6 +473,8 @@ func (h *WikipediaSkill) findDefinition(word string, l *locale.Localizer) (*wiki
 	)
 	wg.Add(1)
 	go func() {
+		// TODO: Is this really necessary? Potentially remove.
+		time.Sleep(10 * time.Millisecond) // Attempt to see if it helps when GetPage starts first
 		searchResult, searchError = h.wiki.SearchPage(word, l)
 		wg.Done()
 	}()
