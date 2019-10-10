@@ -31,6 +31,8 @@ github.com/petergtz/go-alexa v0.0.0-20190923210702-bbabef0d3c17 h1:1f+hgLkgz8K3R
 github.com/petergtz/go-alexa v0.0.0-20190923210702-bbabef0d3c17/go.mod h1:dEwjsv5Ft4jtaB+sAqQeCfGVFUjHMLlNcTxkwc7s3A4=
 github.com/petergtz/go-alexa v0.0.0-20191008081238-fed84e085127 h1:jFQqEsLLZCiAEEvY4pyxlE40mkNA2cm/U9B/VYUb1VY=
 github.com/petergtz/go-alexa v0.0.0-20191008081238-fed84e085127/go.mod h1:dEwjsv5Ft4jtaB+sAqQeCfGVFUjHMLlNcTxkwc7s3A4=
+github.com/petergtz/go-alexa v0.0.0-20191008085416-26b4009a4a9e h1:XbRBg2qKcbtHYNh3BrYfyGhVL/2jpA/WEkw4j8/KXck=
+github.com/petergtz/go-alexa v0.0.0-20191008085416-26b4009a4a9e/go.mod h1:mWbZ3vksaxbQBvwETvPntqqfGLa+fe7AqPvtGOug6+U=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/math v0.0.0-20141027224758-f2ed9e40e245 h1:gk/AF9SGRj+RafNCoDcS3RRscb8S4BVbvqODOgWA7/8=

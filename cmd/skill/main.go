@@ -1,45 +1,29 @@
 package main
 
 import (
-	"context"
+	"log"
+	"math/rand"
+	"time"
 
-	"github.com/aws/aws-lambda-go/lambdacontext"
-
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/petergtz/alexa-wikipedia/cmd/skill/factory"
-	"github.com/petergtz/go-alexa"
+	"github.com/petergtz/go-alexa/lambda"
+	"go.uber.org/zap"
 )
 
 func main() {
-	logger := factory.CreateLoggerWith("debug")
+	logger := createLoggerWith(zap.NewAtomicLevelAt(zap.DebugLevel))
 	defer logger.Sync()
+	lambda.StartLambdaSkill(factory.CreateSkill(logger), logger)
+}
 
-	invocationCount := 0
-
-	skill := factory.CreateSkill(logger)
-	lambda.Start(func(ctx context.Context, requestEnv alexa.RequestEnvelope) (alexa.ResponseEnvelope, error) {
-		invocationCount++
-		lc, _ := lambdacontext.FromContext(ctx)
-
-		if requestEnv.Request == nil {
-
-			logger.Infow("Keep-alive CloudWatch Request",
-				"aws-request-id", lc.AwsRequestID,
-				"function-invocation-count", invocationCount)
-
-			return alexa.ResponseEnvelope{}, nil
-		}
-		logger.Infow("Alexa Request",
-			"aws-request-id", lc.AwsRequestID,
-			"alexa-request-id", requestEnv.Request.RequestID,
-			"function-invocation-count", invocationCount,
-			"type", requestEnv.Request.Type,
-			"intent", requestEnv.Request.Intent,
-			"session-attributes", requestEnv.Session.Attributes,
-			"locale", requestEnv.Request.Locale,
-			"user-id", requestEnv.Session.User.UserID,
-			"session-id", requestEnv.Session.SessionID)
-
-		return *skill.ProcessRequest(&requestEnv), nil
-	})
+func createLoggerWith(logLevel zap.AtomicLevel) *zap.SugaredLogger {
+	loggerConfig := zap.NewProductionConfig()
+	loggerConfig.Level = logLevel
+	loggerConfig.DisableStacktrace = true
+	logger, e := loggerConfig.Build()
+	if e != nil {
+		log.Panic(e)
+	}
+	rand.Seed(time.Now().UnixNano())
+	return logger.Sugar().With("function-instance-id", rand.Int63())
 }
