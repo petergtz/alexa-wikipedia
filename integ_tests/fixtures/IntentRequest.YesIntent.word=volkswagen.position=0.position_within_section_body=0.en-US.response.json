@@ -3,7 +3,7 @@
     "response": {
         "outputSpeech": {
             "type": "PlainText",
-            "text": "The Volkswagen Atlas (a large crossover SUV) began production in late 2016, and aimed to help end several years of losses for Volkswagen in the United States, the world's second-largest auto market. On 14 September 2016, Volkswagen announced its partnership with three Israeli cybersecurity experts to create a new company, Cymotive, dedicated to automotive security. Shall I continue?"
+            "text": "The Volkswagen Atlas (a large crossover SUV) began production in late 2016, and aimed to help end several years of losses for Volkswagen in the United States, the world's second-largest auto market. On 14 September 2016, Volkswagen announced its partnership with three Israeli cybersecurity experts to create a new company, Cymotive, dedicated to automotive security.\n\nShall I continue?"
         },
         "shouldEndSession": false
     },
