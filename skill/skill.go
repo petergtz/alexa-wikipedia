@@ -255,7 +255,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(bodyPart + " " +
+					OutputSpeech: plainText(bodyPart + "\n\n" +
 						l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 							ID:    "ShouldIContinue",
 							Other: "Soll ich noch weiterlesen?",
@@ -277,8 +277,9 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				Response: &alexa.Response{
 					OutputSpeech: plainText(h.bodyChopper.FetchBodyPart(
 						page.TextForPosition(int(requestEnv.Session.Attributes["position"].(float64))),
-						int(requestEnv.Session.Attributes["position_within_section_body"].(float64))) +
-						" " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+						int(requestEnv.Session.Attributes["position_within_section_body"].(float64)),
+					) +
+						"\n\n" + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 						ID:    "ShouldIContinue",
 						Other: "Soll ich noch weiterlesen?",
 					}})),
@@ -320,7 +321,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 
 			return &alexa.ResponseEnvelope{Version: "1.0",
 				Response: &alexa.Response{
-					OutputSpeech: plainText(bodyPart + " " +
+					OutputSpeech: plainText(bodyPart + "\n\n" +
 						l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 							ID:    "ShouldIContinue",
 							Other: "Soll ich noch weiterlesen?",
@@ -388,7 +389,7 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 			s = h.bodyChopper.FetchBodyPart(s, 0)
 			lastQuestion := ""
 			if s != "" {
-				s += " " + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
+				s += "\n\n" + l.MustLocalize(&LocalizeConfig{DefaultMessage: &Message{
 					ID:    "ShouldIContinue",
 					Other: "Soll ich noch weiterlesen?",
 				}})
