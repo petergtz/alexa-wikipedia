@@ -62,9 +62,12 @@ type SearchQuery struct {
 }
 
 func (mw *MediaWiki) GetPage(word string, localizer *locale.Localizer) (wiki.Page, error) {
+	return mw.getPage("titles="+url.QueryEscape(strings.Title(word)), localizer)
+}
+
+func (mw *MediaWiki) getPage(query string, localizer *locale.Localizer) (wiki.Page, error) {
 	var extract ExtractQuery
-	word = strings.Title(word)
-	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&titles="+url.QueryEscape(word)+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
+	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&"+query+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
 	if e != nil {
 		return wiki.Page{}, e
 	}
@@ -83,17 +86,7 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 	if len(search.Query.Search) == 0 {
 		return wiki.Page{}, errors.New("Page not found on Wikipedia")
 	}
-
-	var extract ExtractQuery
-	e = makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&pageids="+strconv.Itoa(search.Query.Search[0].Pageid)+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
-	if e != nil {
-		return wiki.Page{}, e
-	}
-	if extract.Query.Pages[0].Missing {
-		return wiki.Page{}, errors.New("Page not found on Wikipedia")
-	}
-	return WikiPageFrom(extract.Query.Pages[0], localizer), nil
-
+	return mw.getPage("pageids="+strconv.Itoa(search.Query.Search[0].Pageid), localizer)
 }
 
 func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) error {
