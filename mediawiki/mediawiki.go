@@ -18,8 +18,15 @@ import (
 	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
+type WikiPagePreProcessor interface{ Process(Page) Page }
+
+type NoOpWikiPagePreProcessor struct{}
+
+func (pp *NoOpWikiPagePreProcessor) Process(p Page) Page { return p }
+
 type MediaWiki struct {
-	Logger *zap.SugaredLogger
+	Logger               *zap.SugaredLogger
+	WikiPagePreProcessor WikiPagePreProcessor
 }
 
 type Page struct {
@@ -65,18 +72,6 @@ func (mw *MediaWiki) GetPage(word string, localizer *locale.Localizer) (wiki.Pag
 	return mw.getPage("titles="+url.QueryEscape(strings.Title(word)), localizer)
 }
 
-func (mw *MediaWiki) getPage(query string, localizer *locale.Localizer) (wiki.Page, error) {
-	var extract ExtractQuery
-	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&"+query+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
-	if e != nil {
-		return wiki.Page{}, e
-	}
-	if extract.Query.Pages[0].Missing {
-		return wiki.Page{}, errors.New("Page not found on Wikipedia")
-	}
-	return WikiPageFrom(extract.Query.Pages[0], localizer), nil
-}
-
 func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.Page, error) {
 	var search SearchQuery
 	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&list=search&srsearch="+url.QueryEscape(word)+"&srprop=&utf8=&srlimit=1", &search, mw.Logger)
@@ -87,6 +82,18 @@ func (mw *MediaWiki) SearchPage(word string, localizer *locale.Localizer) (wiki.
 		return wiki.Page{}, errors.New("Page not found on Wikipedia")
 	}
 	return mw.getPage("pageids="+strconv.Itoa(search.Query.Search[0].Pageid), localizer)
+}
+
+func (mw *MediaWiki) getPage(query string, localizer *locale.Localizer) (wiki.Page, error) {
+	var extract ExtractQuery
+	e := makeJsonRequest("https://"+localizer.WikiEndpoint()+"/w/api.php?format=json&action=query&prop=extracts&"+query+"&redirects=true&formatversion=2&explaintext=true&exlimit=1", &extract, mw.Logger)
+	if e != nil {
+		return wiki.Page{}, e
+	}
+	if extract.Query.Pages[0].Missing {
+		return wiki.Page{}, errors.New("Page not found on Wikipedia")
+	}
+	return WikiPageFrom(mw.WikiPagePreProcessor.Process(extract.Query.Pages[0]), localizer), nil
 }
 
 func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) error {

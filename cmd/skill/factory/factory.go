@@ -39,7 +39,8 @@ func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 	return decorator.ForSkillWithInteractionLogging(
 		skill.NewWikipediaSkill(
 			&mediawiki.MediaWiki{
-				Logger: logger,
+				Logger:               logger,
+				WikiPagePreProcessor: &mediawiki.NoOpWikiPagePreProcessor{},
 			},
 			createI18nBundle(),
 			interactionLogger,
