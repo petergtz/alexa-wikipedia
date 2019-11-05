@@ -18,11 +18,7 @@ import (
 	"github.com/petergtz/alexa-wikipedia/wiki"
 )
 
-type WikiPagePreProcessor interface{ Process(Page) Page }
-
-type NoOpWikiPagePreProcessor struct{}
-
-func (pp *NoOpWikiPagePreProcessor) Process(p Page) Page { return p }
+type WikiPagePreProcessor interface{ Process(*Page) *Page }
 
 type MediaWiki struct {
 	Logger               *zap.SugaredLogger
@@ -93,7 +89,7 @@ func (mw *MediaWiki) getPage(query string, localizer *locale.Localizer) (wiki.Pa
 	if extract.Query.Pages[0].Missing {
 		return wiki.Page{}, errors.New("Page not found on Wikipedia")
 	}
-	return WikiPageFrom(mw.WikiPagePreProcessor.Process(extract.Query.Pages[0]), localizer), nil
+	return WikiPageFrom(mw.WikiPagePreProcessor.Process(&extract.Query.Pages[0]), localizer), nil
 }
 
 func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) error {
@@ -122,7 +118,7 @@ func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) er
 	return nil
 }
 
-func WikiPageFrom(mediawikipage Page, localizer *locale.Localizer) wiki.Page {
+func WikiPageFrom(mediawikipage *Page, localizer *locale.Localizer) wiki.Page {
 	page := wiki.Page{
 		Title: mediawikipage.Title,
 		// It's not obvious, but suffixing a \n to the text helps with regexes below

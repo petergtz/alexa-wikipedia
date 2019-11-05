@@ -38,6 +38,10 @@ var _ = Describe("Skill", func() {
 		skill = factory.CreateSkill(logger.Sugar())
 	})
 
+	AfterSuite(func() {
+		time.Sleep(3 * time.Second) // Make sure worker queues can finish work
+	})
+
 	_, filename, _, _ := runtime.Caller(0)
 	fileInfos, e := ioutil.ReadDir(filepath.Join(filepath.Dir(filename), "fixtures"))
 	if e != nil {

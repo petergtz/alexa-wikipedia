@@ -4,6 +4,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/aws/aws-sdk-go/service/sns"
+
+	"github.com/petergtz/alexa-wikipedia/github"
+
 	"github.com/BurntSushi/toml"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -31,6 +35,11 @@ func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 		logger.Infow("Using DynamoDB table override", "table", tableName)
 	}
 
+	githubToken := os.Getenv("GITHUB_TOKEN")
+	if githubToken == "" {
+		logger.Fatal("GITHUB_TOKEN not set. Please set it to a valid token from Github.")
+	}
+
 	interactionLogger := dynamodb.NewInteractionLogger(
 		awsdyndb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-central-1")}))),
 		logger,
@@ -39,8 +48,22 @@ func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 	return decorator.ForSkillWithInteractionLogging(
 		skill.NewWikipediaSkill(
 			&mediawiki.MediaWiki{
-				Logger:               logger,
-				WikiPagePreProcessor: &mediawiki.NoOpWikiPagePreProcessor{},
+				Logger: logger,
+				WikiPagePreProcessor: mediawiki.NewHighlightMissingSpacesNaivelyWikiPagePreProcessor(
+					github.NewGithubPersistence(
+						"petergtz",
+						"alexa-wikipedia",
+						549126277,
+						githubToken,
+						github.NewGithubErrorReporter(
+							"petergtz",
+							"alexa-wikipedia",
+							githubToken,
+							logger,
+							"``fields @timestamp, @message | filter `error-id` = %v``",
+							sns.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-west-1")}))),
+							"arn:aws:sns:eu-west-1:512841817041:AlexaWikipediaErrors")),
+				),
 			},
 			createI18nBundle(),
 			interactionLogger,
