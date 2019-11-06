@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cenkalti/backoff"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
@@ -35,7 +36,12 @@ func NewGithubPersistence(owner, repo string, issueCommentID int64, token string
 }
 
 func (pp *GithubPersistence) Persist(findings []string) {
-	comment, _, e := pp.ghClient.Issues.GetComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID)
+	var comment *github.IssueComment
+	e := retryTempOrTimeoutErrors(func() error {
+		var e error
+		comment, _, e = pp.ghClient.Issues.GetComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID)
+		return e
+	})
 	if e != nil {
 		pp.errorReporter.ReportError(e)
 		return
@@ -44,14 +50,33 @@ func (pp *GithubPersistence) Persist(findings []string) {
 	if updated == comment.GetBody() {
 		return
 	}
-	_, _, e = pp.ghClient.Issues.EditComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID, &github.IssueComment{
-		ID:   github.Int64(pp.issueCommentID),
-		Body: github.String(updated),
+	e = retryTempOrTimeoutErrors(func() error {
+		_, _, e := pp.ghClient.Issues.EditComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID, &github.IssueComment{
+			ID:   github.Int64(pp.issueCommentID),
+			Body: github.String(updated),
+		})
+		return e
 	})
 	if e != nil {
 		pp.errorReporter.ReportError(e)
 		return
 	}
+}
+
+func retryTempOrTimeoutErrors(op func() error) error {
+	return backoff.Retry(
+		func() error { return wrapAsPermanentIfApplies(op()) },
+		backoff.WithMaxRetries(backoff.NewExponentialBackOff(), 5))
+}
+
+func wrapAsPermanentIfApplies(e error) error {
+	if tempError, isTempError := e.(interface{ Temporary() bool }); isTempError && tempError.Temporary() {
+		return e
+	}
+	if timeoutError, isTimeoutError := e.(interface{ Timeout() bool }); isTimeoutError && timeoutError.Timeout() {
+		return e
+	}
+	return backoff.Permanent(e)
 }
 
 var linebreakPattern = regexp.MustCompile("\r?\n")
