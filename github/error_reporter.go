@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/rand"
 	"runtime/debug"
+	"sort"
+	"strings"
 
 	"github.com/petergtz/go-alexa"
 
@@ -100,11 +102,12 @@ func errorStringFrom(e interface{}) string {
 }
 
 func stringify(m map[string]interface{}) string {
-	result := ""
+	var slice []string
 	for k, v := range m {
-		result += fmt.Sprintf("%v: %v\n", k, v)
+		slice = append(slice, fmt.Sprintf("%v: %v", k, v))
 	}
-	return result
+	sort.Strings(slice)
+	return strings.Join(slice, "\n")
 }
 
 func slicify(m map[string]interface{}) []interface{} {
