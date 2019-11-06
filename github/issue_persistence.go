@@ -42,6 +42,9 @@ func (pp *GithubPersistence) Persist(findings []string) {
 		comment, _, e = pp.ghClient.Issues.GetComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID)
 		return e
 	})
+	if isTempOrTimeoutError(e) {
+		return // do not report, as there is no point in doing so. TODO: emit metrics about this.
+	}
 	if e != nil {
 		pp.errorReporter.ReportError(e)
 		return
@@ -57,6 +60,9 @@ func (pp *GithubPersistence) Persist(findings []string) {
 		})
 		return e
 	})
+	if isTempOrTimeoutError(e) {
+		return // do not report, as there is no point in doing so. TODO: emit metrics about this.
+	}
 	if e != nil {
 		pp.errorReporter.ReportError(e)
 		return
@@ -70,13 +76,20 @@ func retryTempOrTimeoutErrors(op func() error) error {
 }
 
 func wrapAsPermanentIfApplies(e error) error {
-	if tempError, isTempError := e.(interface{ Temporary() bool }); isTempError && tempError.Temporary() {
-		return e
-	}
-	if timeoutError, isTimeoutError := e.(interface{ Timeout() bool }); isTimeoutError && timeoutError.Timeout() {
+	if isTempOrTimeoutError(e) {
 		return e
 	}
 	return backoff.Permanent(e)
+}
+
+func isTempOrTimeoutError(e error) bool {
+	if tempError, isTempError := e.(interface{ Temporary() bool }); isTempError && tempError.Temporary() {
+		return true
+	}
+	if timeoutError, isTimeoutError := e.(interface{ Timeout() bool }); isTimeoutError && timeoutError.Timeout() {
+		return true
+	}
+	return false
 }
 
 var linebreakPattern = regexp.MustCompile("\r?\n")
