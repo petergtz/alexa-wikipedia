@@ -17,38 +17,48 @@ import (
 	"golang.org/x/text/language"
 )
 
+type noOpWikiPagePreprocessor struct{}
+
+func (*noOpWikiPagePreprocessor) Process(p *mediawiki.Page) *mediawiki.Page { return p }
+
 var _ = Describe("Mediawiki", func() {
 	var (
 		localizer *locale.Localizer
 		logger    *zap.Logger
+		mediaWiki *mediawiki.MediaWiki
 	)
 	BeforeEach(func() {
 		var e error
 		logger, e = zap.NewDevelopment()
 		Expect(e).NotTo(HaveOccurred())
 		localizer = locale.NewLocalizer(i18n.NewBundle(language.English), "de-DE", logger.Sugar())
+		mediaWiki = &mediawiki.MediaWiki{
+			Logger:               logger.Sugar(),
+			WikiPagePreProcessor: &noOpWikiPagePreprocessor{},
+		}
+
 	})
 
 	It("returns the page even when it's not an exact match", func() {
-		page, e := (&mediawiki.MediaWiki{logger.Sugar()}).SearchPage("Der Baum", localizer)
+		page, e := mediaWiki.SearchPage("Der Baum", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Baum"))
 	})
 
 	It("returns the page when it finds it", func() {
-		page, e := (&mediawiki.MediaWiki{logger.Sugar()}).GetPage("Baum", localizer)
+		page, e := mediaWiki.GetPage("Baum", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Baum"))
 	})
 
 	It("returns an error when it cannot find the page", func() {
-		_, e := (&mediawiki.MediaWiki{logger.Sugar()}).GetPage("NotExistingWikiPage", localizer)
+		_, e := mediaWiki.GetPage("NotExistingWikiPage", localizer)
 		Expect(e).To(HaveOccurred())
 		Expect(e.Error()).To(Equal("Page not found on Wikipedia"))
 	})
 
 	It("properly escapes wearch words", func() {
-		page, e := (&mediawiki.MediaWiki{logger.Sugar()}).GetPage("Albert Einstein", localizer)
+		page, e := mediaWiki.GetPage("Albert Einstein", localizer)
 		Expect(e).NotTo(HaveOccurred())
 		Expect(page.Title).To(Equal("Albert Einstein"))
 	})
@@ -57,7 +67,7 @@ var _ = Describe("Mediawiki", func() {
 		It("works", func() {
 			text, e := ioutil.ReadFile("testdata/extract-baum.wiki.txt")
 			Expect(e).NotTo(HaveOccurred())
-			page := mediawiki.WikiPageFrom(mediawiki.Page{Extract: string(text), Title: "Baum"}, localizer)
+			page := mediawiki.WikiPageFrom(&mediawiki.Page{Extract: string(text), Title: "Baum"}, localizer)
 
 			Expect(page.Title).To(Equal("Baum"))
 			Expect(page.Body).To(Equal("Als Baum wird im allgemeinen Sprachgebrauch eine verholzte Pflanze verstanden, die aus einer Wurzel, einem daraus emporsteigenden, hochgewachsenen Stamm und einer belaubten Krone besteht."))

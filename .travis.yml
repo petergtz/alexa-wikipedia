@@ -10,8 +10,8 @@ install:
   - go get github.com/onsi/ginkgo/ginkgo
 
 script:
-  - TABLE_NAME_OVERRIDE=TestAlexaWikipediaRequests ginkgo -r --skipPackage=s3
+  - TABLE_NAME_OVERRIDE=TestAlexaWikipediaRequests ginkgo -r --skipPackage=s3,github
 
 branches:
   except:
-  - /^wip.*$/
+    - /^wip.*$/
