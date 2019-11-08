@@ -3,15 +3,13 @@ package mediawiki
 import (
 	"regexp"
 
-	"github.com/petergtz/go-alexa"
-
 	"github.com/pkg/math"
 )
 
 type Persistence interface{ Persist([]string) error }
 
 type ErrorReporter interface {
-	ReportPanic(interface{}, *alexa.RequestEnvelope)
+	ReportPanic(interface{}, interface{})
 }
 
 type HighlightMissingSpacesNaivelyWikiPagePreProcessor struct {

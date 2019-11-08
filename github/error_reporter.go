@@ -9,8 +9,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/petergtz/go-alexa"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
 
@@ -21,7 +19,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type GithubErrorReporter struct {
+type ErrorReporter struct {
 	ghClient    *github.Client
 	logger      *zap.SugaredLogger
 	ctx         context.Context
@@ -32,9 +30,9 @@ type GithubErrorReporter struct {
 	snsTopicArn string
 }
 
-func NewErrorReporter(owner, repo, token string, logger *zap.SugaredLogger, logsURL string, snsClient *sns.SNS, snsTopicArn string) *GithubErrorReporter {
+func NewErrorReporter(owner, repo, token string, logger *zap.SugaredLogger, logsURL string, snsClient *sns.SNS, snsTopicArn string) *ErrorReporter {
 	ctx := context.TODO()
-	return &GithubErrorReporter{
+	return &ErrorReporter{
 		ghClient:    github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		ctx:         ctx,
 		logger:      logger,
@@ -46,7 +44,7 @@ func NewErrorReporter(owner, repo, token string, logger *zap.SugaredLogger, logs
 	}
 }
 
-func (r *GithubErrorReporter) ReportPanic(e interface{}, requestEnv *alexa.RequestEnvelope) {
+func (r *ErrorReporter) ReportPanic(e interface{}, context interface{}) {
 	errorID := rand.Int63()
 	errorString := errorStringFrom(e)
 
@@ -64,8 +62,7 @@ func (r *GithubErrorReporter) ReportPanic(e interface{}, requestEnv *alexa.Reque
 
 		r.logger.Errorw("Error while trying to report Internal Server Error", slicify(attributes)...)
 	} else {
-		attributes["github-issue-id"] = *issue.Number
-		attributes["github-issue-url"] = issue.GetHTMLURL()
+		attributes["issue-url"] = issue.GetHTMLURL()
 
 		r.logger.Errorw("Internal Server Error", slicify(attributes)...)
 	}
@@ -76,11 +73,11 @@ func (r *GithubErrorReporter) ReportPanic(e interface{}, requestEnv *alexa.Reque
 		Message: aws.String(fmt.Sprintf(`ERROR DETAILS:
 %s
 
-ALEXA REQUEST:
+CONTEXT:
 %v
 
 CLOUDWATCH QUERY:
-%v`, stringify(attributes), alexaRequestString(requestEnv), fmt.Sprintf(r.logsURL, errorID))),
+%v`, stringify(attributes), marshalContext(context), fmt.Sprintf(r.logsURL, errorID))),
 	})
 
 	if snsErr != nil {
@@ -90,7 +87,7 @@ CLOUDWATCH QUERY:
 	}
 }
 
-func (r *GithubErrorReporter) ReportError(e error) {
+func (r *ErrorReporter) ReportError(e error) {
 	r.ReportPanic(e, nil)
 }
 
@@ -118,15 +115,13 @@ func slicify(m map[string]interface{}) []interface{} {
 	return result
 }
 
-func alexaRequestString(requestEnv *alexa.RequestEnvelope) string {
-	if requestEnv == nil {
+func marshalContext(context interface{}) string {
+	if context == nil {
 		return "Not available."
 	}
-	r := *requestEnv
-	r.Session.User.AccessToken = "<REDACTED>"
-	buf, e := json.MarshalIndent(r, "", "  ")
+	buf, e := json.MarshalIndent(context, "", "  ")
 	if e != nil {
-		return "Error while marshalling request. Error: " + e.Error()
+		return "Error while marshalling context. Error: " + e.Error()
 	}
 	return string(buf)
 }
