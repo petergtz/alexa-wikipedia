@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/math"
 )
 
-type Persistence interface{ Persist([]string) }
+type Persistence interface{ Persist([]string) error }
 
 type ErrorReporter interface {
 	ReportPanic(interface{}, *alexa.RequestEnvelope)
@@ -41,7 +41,7 @@ func (pp *HighlightMissingSpacesNaivelyWikiPagePreProcessor) Process(page *Page)
 	return page
 }
 
-func (pp *HighlightMissingSpacesNaivelyWikiPagePreProcessor) doProcess(page *Page) *Page {
+func (pp *HighlightMissingSpacesNaivelyWikiPagePreProcessor) doProcess(page *Page) {
 	defer func() {
 		if e := recover(); e != nil {
 			pp.errorReporter.ReportPanic(e, nil)
@@ -54,8 +54,13 @@ func (pp *HighlightMissingSpacesNaivelyWikiPagePreProcessor) doProcess(page *Pag
 		findings = append(findings, finding)
 	}
 	if len(findings) > 0 {
-		pp.Persistence.Persist(findings)
+		e := pp.Persistence.Persist(findings)
+		PanicOnError(e)
 	}
+}
 
-	return page
+func PanicOnError(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

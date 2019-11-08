@@ -32,7 +32,7 @@ type GithubErrorReporter struct {
 	snsTopicArn string
 }
 
-func NewGithubErrorReporter(owner, repo, token string, logger *zap.SugaredLogger, logsURL string, snsClient *sns.SNS, snsTopicArn string) *GithubErrorReporter {
+func NewErrorReporter(owner, repo, token string, logger *zap.SugaredLogger, logsURL string, snsClient *sns.SNS, snsTopicArn string) *GithubErrorReporter {
 	ctx := context.TODO()
 	return &GithubErrorReporter{
 		ghClient:    github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),

@@ -50,13 +50,13 @@ func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 			&mediawiki.MediaWiki{
 				Logger: logger,
 				WikiPagePreProcessor: mediawiki.NewHighlightMissingSpacesNaivelyWikiPagePreProcessor(
-					github.NewGithubPersistence(
+					github.NewPersistence(
 						"petergtz",
 						"alexa-wikipedia",
 						549126277,
 						githubToken,
 					),
-					github.NewGithubErrorReporter(
+					github.NewErrorReporter(
 						"petergtz",
 						"alexa-wikipedia",
 						githubToken,

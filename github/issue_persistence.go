@@ -20,7 +20,7 @@ type GithubPersistence struct {
 	issueCommentID int64
 }
 
-func NewGithubPersistence(owner, repo string, issueCommentID int64, token string) *GithubPersistence {
+func NewPersistence(owner, repo string, issueCommentID int64, token string) *GithubPersistence {
 	ctx := context.TODO()
 	return &GithubPersistence{
 		ghClient:       github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
@@ -31,21 +31,23 @@ func NewGithubPersistence(owner, repo string, issueCommentID int64, token string
 	}
 }
 
-func (pp *GithubPersistence) Persist(findings []string) {
+func (pp *GithubPersistence) Persist(findings []string) error {
 	var comment *github.IssueComment
 	e := retryTempOrTimeoutErrors(func() error {
 		var e error
 		comment, _, e = pp.ghClient.Issues.GetComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID)
 		return e
 	})
-	if isTempOrTimeoutError(e) {
-		return // do not report, as there is no point in doing so. TODO: emit metrics about this.
+	switch {
+	case isTempOrTimeoutError(e):
+		return nil // do not report, as there is no point in doing so. TODO: emit metrics about this.
+	case e != nil:
+		return errors.Wrap(e, "Could not get comment on Github")
 	}
-	PanicOnError(errors.Wrap(e, "Could not get comment on Github"))
 
 	updated := AddMissing(comment.GetBody(), findings)
 	if updated == comment.GetBody() {
-		return
+		return nil
 	}
 	e = retryTempOrTimeoutErrors(func() error {
 		_, _, e := pp.ghClient.Issues.EditComment(pp.ctx, pp.owner, pp.repo, pp.issueCommentID, &github.IssueComment{
@@ -54,16 +56,13 @@ func (pp *GithubPersistence) Persist(findings []string) {
 		})
 		return e
 	})
-	if isTempOrTimeoutError(e) {
-		return // do not report, as there is no point in doing so. TODO: emit metrics about this.
+	switch {
+	case isTempOrTimeoutError(e):
+		return nil // do not report, as there is no point in doing so. TODO: emit metrics about this.
+	case e != nil:
+		return errors.Wrap(e, "Could not edit comment on Github")
 	}
-	PanicOnError(errors.Wrap(e, "Could not edit comment on Github"))
-}
-
-func PanicOnError(e error) {
-	if e != nil {
-		panic(e)
-	}
+	return nil
 }
 
 func retryTempOrTimeoutErrors(op func() error) error {
