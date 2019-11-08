@@ -5,14 +5,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/cenkalti/backoff"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
-
-type ErrorReporter interface {
-	ReportError(error)
-}
 
 type GithubPersistence struct {
 	ghClient       *github.Client
@@ -20,15 +18,13 @@ type GithubPersistence struct {
 	owner          string
 	repo           string
 	issueCommentID int64
-	errorReporter  ErrorReporter
 }
 
-func NewGithubPersistence(owner, repo string, issueCommentID int64, token string, errorReporter ErrorReporter) *GithubPersistence {
+func NewGithubPersistence(owner, repo string, issueCommentID int64, token string) *GithubPersistence {
 	ctx := context.TODO()
 	return &GithubPersistence{
 		ghClient:       github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		ctx:            ctx,
-		errorReporter:  errorReporter,
 		repo:           repo,
 		owner:          owner,
 		issueCommentID: issueCommentID,
@@ -45,10 +41,8 @@ func (pp *GithubPersistence) Persist(findings []string) {
 	if isTempOrTimeoutError(e) {
 		return // do not report, as there is no point in doing so. TODO: emit metrics about this.
 	}
-	if e != nil {
-		pp.errorReporter.ReportError(e)
-		return
-	}
+	PanicOnError(errors.Wrap(e, "Could not get comment on Github"))
+
 	updated := AddMissing(comment.GetBody(), findings)
 	if updated == comment.GetBody() {
 		return
@@ -63,9 +57,12 @@ func (pp *GithubPersistence) Persist(findings []string) {
 	if isTempOrTimeoutError(e) {
 		return // do not report, as there is no point in doing so. TODO: emit metrics about this.
 	}
+	PanicOnError(errors.Wrap(e, "Could not edit comment on Github"))
+}
+
+func PanicOnError(e error) {
 	if e != nil {
-		pp.errorReporter.ReportError(e)
-		return
+		panic(e)
 	}
 }
 

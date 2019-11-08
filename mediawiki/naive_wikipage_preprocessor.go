@@ -3,22 +3,28 @@ package mediawiki
 import (
 	"regexp"
 
+	"github.com/petergtz/go-alexa"
+
 	"github.com/pkg/math"
 )
 
-type Persistence interface {
-	Persist([]string)
+type Persistence interface{ Persist([]string) }
+
+type ErrorReporter interface {
+	ReportPanic(interface{}, *alexa.RequestEnvelope)
 }
 
 type HighlightMissingSpacesNaivelyWikiPagePreProcessor struct {
-	Persistence Persistence
-	pageChan    chan *Page
+	Persistence   Persistence
+	pageChan      chan *Page
+	errorReporter ErrorReporter
 }
 
-func NewHighlightMissingSpacesNaivelyWikiPagePreProcessor(Persistence Persistence) *HighlightMissingSpacesNaivelyWikiPagePreProcessor {
+func NewHighlightMissingSpacesNaivelyWikiPagePreProcessor(persistence Persistence, errorReporter ErrorReporter) *HighlightMissingSpacesNaivelyWikiPagePreProcessor {
 	pp := &HighlightMissingSpacesNaivelyWikiPagePreProcessor{
-		Persistence: Persistence,
-		pageChan:    make(chan *Page, 100),
+		Persistence:   persistence,
+		pageChan:      make(chan *Page, 100),
+		errorReporter: errorReporter,
 	}
 	go func() {
 		for page := range pp.pageChan {
@@ -36,6 +42,12 @@ func (pp *HighlightMissingSpacesNaivelyWikiPagePreProcessor) Process(page *Page)
 }
 
 func (pp *HighlightMissingSpacesNaivelyWikiPagePreProcessor) doProcess(page *Page) *Page {
+	defer func() {
+		if e := recover(); e != nil {
+			pp.errorReporter.ReportPanic(e, nil)
+		}
+	}()
+
 	var findings []string
 	for _, index := range pattern.FindAllStringIndex(page.Extract, -1) {
 		finding := page.Extract[math.MaxInt(index[0]-10, 0):math.MinInt(index[1]+10, len(page.Extract))]
