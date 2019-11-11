@@ -85,6 +85,11 @@ func isTempOrTimeoutError(e error) bool {
 	if timeoutError, isTimeoutError := e.(interface{ Timeout() bool }); isTimeoutError && timeoutError.Timeout() {
 		return true
 	}
+	// It's kind of annoying, but Go's error handling just doesn't allow a better control over errors right now.
+	// Stack trace with error can be found at: https://github.com/petergtz/alexa-wikipedia/issues/64
+	if strings.HasSuffix(e.Error(), "EOF") {
+		return true
+	}
 	return false
 }
 
