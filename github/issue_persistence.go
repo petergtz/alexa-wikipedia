@@ -72,10 +72,7 @@ func retryTempOrTimeoutErrors(op func() error) error {
 }
 
 func wrapAsPermanentIfApplies(e error) error {
-	if isTempOrTimeoutError(e) {
-		return e
-	}
-	return backoff.Permanent(e)
+	return e
 }
 
 func isTempOrTimeoutError(e error) bool {
