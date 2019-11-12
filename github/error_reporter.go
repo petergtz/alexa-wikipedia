@@ -11,6 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/davecgh/go-spew/spew"
 
 	"go.uber.org/zap"
 
@@ -32,6 +33,7 @@ type ErrorReporter struct {
 
 func NewErrorReporter(owner, repo, token string, logger *zap.SugaredLogger, logsURL string, snsClient *sns.SNS, snsTopicArn string) *ErrorReporter {
 	ctx := context.TODO()
+	spew.Config.ContinueOnMethod = true
 	return &ErrorReporter{
 		ghClient:    github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		ctx:         ctx,
@@ -95,7 +97,7 @@ func errorStringFrom(e interface{}) string {
 	if _, hasStackTrace := e.(interface{ StackTrace() errors.StackTrace }); hasStackTrace {
 		return fmt.Sprintf("%+v", e)
 	}
-	return fmt.Sprintf("%v\n%s", e, debug.Stack())
+	return fmt.Sprintf("STRING: %v\nSTACKTRACE:\n%s\nINTROSPECTION:\n%v", e, debug.Stack(), spew.Sdump(e))
 }
 
 func stringify(m map[string]interface{}) string {

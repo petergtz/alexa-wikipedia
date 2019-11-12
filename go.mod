@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-lambda-go v1.13.2
 	github.com/aws/aws-sdk-go v1.19.42
 	github.com/cenkalti/backoff v2.2.1+incompatible
+	github.com/davecgh/go-spew v1.1.0
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
