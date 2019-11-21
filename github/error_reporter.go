@@ -95,7 +95,7 @@ func (r *ErrorReporter) ReportError(e error) {
 
 func errorStringFrom(e interface{}) string {
 	if _, hasStackTrace := e.(interface{ StackTrace() errors.StackTrace }); hasStackTrace {
-		return fmt.Sprintf("%+v", e)
+		return fmt.Sprintf("STRING: %v\nSTACKTRACE:\n%+v\nINTROSPECTION:\n%v", e, e, spew.Sdump(e))
 	}
 	return fmt.Sprintf("STRING: %v\nSTACKTRACE:\n%s\nINTROSPECTION:\n%v", e, debug.Stack(), spew.Sdump(e))
 }
