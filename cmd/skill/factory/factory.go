@@ -4,10 +4,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/aws/aws-sdk-go/service/sns"
-
-	"github.com/petergtz/alexa-wikipedia/github"
-
 	"github.com/BurntSushi/toml"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -24,6 +20,10 @@ import (
 	"github.com/petergtz/go-alexa/decorator"
 	"github.com/petergtz/go-alexa/dynamodb"
 )
+
+type noOpWikiPagePreprocessor struct{}
+
+func (*noOpWikiPagePreprocessor) Process(p *mediawiki.Page) *mediawiki.Page { return p }
 
 func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 	// this is a pure priming call to make subsequent calls faster
@@ -48,22 +48,8 @@ func CreateSkill(logger *zap.SugaredLogger) *decorator.InteractionLoggingSkill {
 	return decorator.ForSkillWithInteractionLogging(
 		skill.NewWikipediaSkill(
 			&mediawiki.MediaWiki{
-				Logger: logger,
-				WikiPagePreProcessor: mediawiki.NewHighlightMissingSpacesNaivelyWikiPagePreProcessor(
-					github.NewPersistence(
-						"petergtz",
-						"alexa-wikipedia",
-						549126277,
-						githubToken,
-					),
-					github.NewErrorReporter(
-						"petergtz",
-						"alexa-wikipedia",
-						githubToken,
-						logger,
-						"``fields @timestamp, @message | filter `error-id` = %v``",
-						sns.New(session.Must(session.NewSession(&aws.Config{Region: aws.String("eu-west-1")}))),
-						"arn:aws:sns:eu-west-1:512841817041:AlexaWikipediaErrors")),
+				Logger:               logger,
+				WikiPagePreProcessor: &noOpWikiPagePreprocessor{},
 			},
 			createI18nBundle(),
 			interactionLogger,
