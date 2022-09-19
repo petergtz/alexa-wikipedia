@@ -1,0 +1,203 @@
+{
+  "interactionModel": {
+      "languageModel": {
+          "invocationName": "mi enciclopedia",
+          "intents": [
+              {
+                  "name": "AMAZON.CancelIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.HelpIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.StopIntent",
+                  "samples": []
+              },
+              {
+                  "name": "DefineIntent",
+                  "slots": [
+                      {
+                          "name": "word",
+                          "type": "AMAZON.SearchQuery"
+                      }
+                  ],
+                  "samples": [
+                      "define {word}",
+                      "define la expresión {word}",
+                      "define el significado de {word}",
+                      "define el término {word}",
+                      "define la palabra {word}",
+                      "busca {word}",
+                      "busca la expresión {word}",
+                      "busca el significado de {word}",
+                      "busca el término {word}",
+                      "busca la palabra {word}",
+                      "para {word}",
+                      "para la expresión {word}",
+                      "para el significado de {word}",
+                      "para el término {word}",
+                      "para la palabra {word}",
+                      "de la expresión {word}",
+                      "del significado de {word}",
+                      "del término {word}",
+                      "de la palabra {word}",
+                      "cómo {word}",
+                      "muéstra {word}",
+                      "muéstrame {word}",
+                      "muestra la expresión {word}",
+                      "muéstrame la expresión {word}",
+                      "muestra el significado de {word}",
+                      "muéstrame el significado de {word}",
+                      "muestra el término {word}",
+                      "muéstrame el término {word}",
+                      "definir {word}",
+                      "definir la expresión {word}",
+                      "definir el término {word}",
+                      "definir la palabra {word}",
+                      "qué es {word}",
+                      "cuál es la definición de {word}",
+                      "cuál es el significado de {word}",
+                      "cuándo es {word}",
+                      "cuándo fue {word}",
+                      "cuándo fueron {word}",
+                      "dónde es {word}",
+                      "dónde está {word}",
+                      "dónde fue {word}",
+                      "dónde fueron {word}",
+                      "cuál es {word}",
+                      "cuál fue {word}",
+                      "quién es {word}",
+                      "quién fue {word}",
+                      "quién fueron {word}",
+                      "quiénes fueron {word}"
+                  ]
+              },
+              {
+                  "name": "AMAZON.YesIntent",
+                  "samples": []
+              },
+              {
+                  "name": "TocIntent",
+                  "slots": [],
+                  "samples": [
+                      "índice",
+                      "índice de contenido",
+                      "tabla de contenido"
+                  ]
+              },
+              {
+                  "name": "AMAZON.RepeatIntent",
+                  "samples": []
+              },
+              {
+                  "name": "GoToSectionIntent",
+                  "slots": [
+                      {
+                          "name": "section_title_or_number",
+                          "type": "AMAZON.SearchQuery"
+                      }
+                  ],
+                  "samples": [
+                      "ir a {section_title_or_number}",
+                      "ve a {section_title_or_number}",
+                      "vete a {section_title_or_number}",
+                      "ir a la sección {section_title_or_number}",
+                      "ve a la sección {section_title_or_number}",
+                      "vete a la sección {section_title_or_number}",
+                      "salta a {section_title_or_number}",
+                      "salta hasta {section_title_or_number}",
+                      "salta a la sección {section_title_or_number}",
+                      "salta hasta la sección {section_title_or_number}",
+                      "sección {section_title_or_number}"
+                  ]
+              },
+              {
+                  "name": "AMAZON.ResumeIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.NextIntent",
+                  "samples": [
+                      "siguiente sección",
+                      "sección siguiente"
+                  ]
+              },
+              {
+                  "name": "AMAZON.PauseIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.NoIntent",
+                  "samples": []
+              },
+              {
+                  "name": "AMAZON.FallbackIntent",
+                  "samples": []
+              },
+              {
+                  "name": "SpellIntent",
+                  "slots": [
+                      {
+                          "name": "spelled_term",
+                          "type": "AMAZON.SearchQuery",
+                          "samples": [
+                              "{spelled_term}"
+                          ]
+                      }
+                  ],
+                  "samples": [
+                      "deletreo",
+                      "deletrearé",
+                      "te lo deletreo",
+                      "te lo deletrearé",
+                      "déjame deletrear el término de búsqueda",
+                      "déjame deletrear la búsqueda",
+                      "déjame deletrear",
+                      "deletrear el término de búsqueda",
+                      "deletrear la búsqueda"
+                  ]
+              },
+              {
+                  "name": "AMAZON.NavigateHomeIntent",
+                  "samples": []
+              }
+          ],
+          "types": []
+      },
+      "dialog": {
+          "intents": [
+              {
+                  "name": "SpellIntent",
+                  "confirmationRequired": false,
+                  "prompts": {},
+                  "slots": [
+                      {
+                          "name": "spelled_term",
+                          "type": "AMAZON.SearchQuery",
+                          "confirmationRequired": false,
+                          "elicitationRequired": true,
+                          "prompts": {
+                              "elicitation": "Elicit.Slot.1281507882909.538083537623"
+                          }
+                      }
+                  ]
+              }
+          ],
+          "delegationStrategy": "ALWAYS"
+      },
+      "prompts": [
+          {
+              "id": "Elicit.Slot.1281507882909.538083537623",
+              "variations": [
+                  {
+                      "type": "PlainText",
+                      "value": "Vale. Por favor, deletréalo."
+                  }
+              ]
+          }
+      ]
+  },
+  "version": "4"
+}

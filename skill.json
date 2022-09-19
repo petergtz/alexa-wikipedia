@@ -35,7 +35,8 @@
         "en-US": {},
         "en-CA": {},
         "en-AU": {},
-        "en-IN": {}
+        "en-IN": {},
+        "es-ES": {}
       },
       "allowsPurchases": false,
       "usesPersonalInfo": false,
@@ -146,6 +147,23 @@
             "encyclopedia"
           ],
           "updatesDescription": "It's now also possible to spell the search term, e.g. by saying \"let me spell the search\"."
+        },
+        "es-ES": {
+          "name": "Mi Enciclopedia",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/83a2/5dbe212ccb884a92bc2ffabc533cc27c/APP_ICON?versionId=r4wW8uq4fKqKGJNL0p9uHSZVkTRa_zIf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=e5bbbecb41c9018b33f9a93983a7786917c538f3540661acd04199edace7daee",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/418d/28dd29167aeb4e129e62d418414dae7a/APP_ICON_LARGE?versionId=zkW9_TJ4sLrpGzX3EWt6zo5wki448brL&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190923T215304Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=01efd9a72d1416a5a8d6200b5df494d5621a6847d83cb2c9cea49afd3e62c284",
+          "summary": "Hace la Wikipedia disponible a Alexa.",
+          "description": "Esta skill permite a los usuarios acceder al contenido completo de la Wikipedia. Alexa no sólo leerá el párrafo de introducción, sino que además permite al usuario navegar a través del artículo entero y leer todas las secciones.\n\nEsta skill no es la \"oficial\" de la Wikipedia y no está afiliada en ninguna forma con la Wikimedia Foundation. Simplemente usa la API de la Wikipedia ofrecida por Wikimedia.\n\nPor favor, envíe las solicitudes de características o las quejas a https://github.com/petergtz/alexa-wikipedia/issues/new.",
+          "examplePhrases": [
+            "Alexa, abre mi enciclopedia y busca pastel de queso.",
+            "Alexa, abre mi enciclopedia.",
+            "¿Qué es un pastel de queso?"
+          ],
+          "keywords": [
+            "wikipedia",
+            "enciclopedia"
+          ],
+          "updatesDescription": "Ahora es también posible deletrear el término de búsqueda, por ejemplo diciendo \"déjame deletrear la búsqueda\"."
         }
       },
       "isAvailableWorldwide": true,
