@@ -42,4 +42,25 @@ InternalError = "An internal error occurred while using My encyclopdia."
 EndOfArticle = "Oh, we've already reached the end of the article. Why don't you try a different search. E.g. say \"What is an elephant?\""
 SpellingHint = "I've just read the article \"{{.Title}}\" already. Did I not find what you were looking for? If so, interrupt me and say \"Alexa, spell search\" to spell your search query. Here's the article:"
 `)
+
+	EsEs = []byte(`
+CouldNotFindExpression = "No puedo encontrar éso en la Wikipedia. Prueba de otra forma."
+CouldNotFindSection = "No puedo encontrar la sección \"{{.SectionTitleOrNumber}}\"."
+"No?Okay" = "¿No? Vale."
+Point = "punto"
+Section = "sección"
+ShouldIContinue = "¿Continúo?"
+TableOfContents = "Tabla de contenido"
+What = "¿Perdona?"
+WhichSectionToJump = "¿A qué sección quieres ir?"
+YouAreAtWikipediaNow = "Estás en la Wikipedia. Para leer un artículo, di por ejemplo \"¿Qué es un pastel de queso?\"."
+HelpText = "Para leer un artículo, di por ejemplo \"¿Qué es el pastel de queso?\". Puedes saltar a la tabla de contenido en cualquier momento diciendo \"tabla de contenido\". O decir \"Salta a la sección 3.2\"."
+QuickHelpText = "Primero, busca algo. Por ejemplo, di \"busca pastel de queso\" o \"¿Qué es un pastel de queso?\"."
+FurtherNavigationHints = "Para moverte puedes saltar a la tabla de contenido en cualquier momento o saltar a una sección en concreto. De momento, ¿continúo leyendo?"
+FallbackText = "Mi enciclopedia no puede ayudarte con éso. Pero puedes buscar \"pastel de queso\", por ejemplo."
+CouldNotFindSpelledTerm = "No puedo encontrar el término deletreado \"{{.SpelledTerm}}\" en la Wikipedia. Prueba con otro término."
+InternalError = "Ha ocurrido un error interno mientras se usaba Mi enciclopedia."
+EndOfArticle = "Vaya, ya hemos llegado al final del artículo. ¿Porqué no pruebas una búsqueda diferente? Por ejemplo, di \"¿Qué es un elefante?\""
+SpellingHint = "Acabo de leer el artículo \"{{.Title}}\" ya. ¿No es lo que estabas buscando? Si es éso, interrúmpeme y di \"Alexa, deletrear búsqueda\" para deletrearlo. Aquí tienes el artículo:"
+`)
 )
