@@ -36,10 +36,10 @@ YouAreAtWikipediaNow = "This is Wikipedia. To read an article say e.g. \"What is
 HelpText = "To read an article say e.g. \"What is a cheese cake?\". You can jump to the table of contents any time by saying \"table of contents\". Or say \"Jump to section 3.2\"."
 QuickHelpText = "First, search for something. E.g. say \"search for cheese cake\" or \"What is cheese cake?\"."
 FurtherNavigationHints = "For further navigation you can jump to the table of contents any time or jump to a specific section. For now, shall I simply continue reading?"
-FallbackText = "My encyclopdia cannot help with that. But you could e.g. search for cheese cake."
-CouldNotFindSpelledTerm = "I could not find the spelled term {{.SpelledTerm}} on Wikipedia. Why don't you a try a different term?"
+FallbackText = "My encyclopedia cannot help with that. But you could e.g. search for cheese cake."
+CouldNotFindSpelledTerm = "I could not find the spelled term \"{{.SpelledTerm}}\" on Wikipedia. Why don't you a try a different term?"
 InternalError = "An internal error occurred while using My encyclopdia."
-EndOfArticle = "Oh, we've already reached the end of the article. Why don't you try a different search. E.g. say \"What is an elephant\""
+EndOfArticle = "Oh, we've already reached the end of the article. Why don't you try a different search. E.g. say \"What is an elephant?\""
 SpellingHint = "I've just read the article \"{{.Title}}\" already. Did I not find what you were looking for? If so, interrupt me and say \"Alexa, spell search\" to spell your search query. Here's the article:"
 `)
 )
