@@ -69,5 +69,6 @@ func createI18nBundle() *i18n.Bundle {
 
 	i18nBundle.MustParseMessageFileBytes(locale.DeDe, "active.de.toml")
 	i18nBundle.MustParseMessageFileBytes(locale.EnUs, "active.en.toml")
+	i18nBundle.MustParseMessageFileBytes(locale.EsEs, "active.es.toml")
 	return i18nBundle
 }
