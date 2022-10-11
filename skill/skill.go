@@ -165,6 +165,25 @@ func (h *WikipediaSkill) ProcessRequest(requestEnv *alexa.RequestEnvelope) *alex
 				},
 			}
 		case "SpellIntent":
+			if intent.Slots["spelled_term"].Value == "" {
+				// TODO: it's unclear why this ever happens, but according to logs this is what Alexa sometimes sends, especially during certification.
+				//       This could get better error handling or even some slot elicitation (which should have happened automatically), but for now
+				//       this is good enough.
+				return &alexa.ResponseEnvelope{Version: "1.0",
+					Response: &alexa.Response{
+						OutputSpeech: plainText(
+							l.MustLocalize(&LocalizeConfig{
+								DefaultMessage: &Message{
+									ID:    "CouldNotFindSpelledTerm",
+									Other: "Den buchstabierten Begriff {{.SpelledTerm}} konnte ich bei Wikipedia leider nicht finden. Versuche es doch mit einem anderen Begriff.",
+								},
+								TemplateData: map[string]string{"SpelledTerm": intent.Slots["spelled_term"].Value},
+							}),
+						),
+					},
+				}
+
+			}
 			assembledSearchQuery := l.AssembleTermFromSpelling(intent.Slots["spelled_term"].Value)
 			definition, e := h.findDefinition(assembledSearchQuery, l)
 			if e != nil {
