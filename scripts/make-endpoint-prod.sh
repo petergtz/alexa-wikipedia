@@ -3,7 +3,7 @@
 cd $(dirname $0)/..
 
 for region in 'us-east-1' 'eu-west-1' 'ap-northeast-1'; do
-    sed -E -i "s/(arn:aws:lambda:$region:512841817041:function:AlexaWikipedia)(.*)/\1:prod/g" skill.json
+    sed -E -i "s/(arn:aws:lambda:$region:512841817041:function:AlexaWikipedia)(.*)/\1:prod"'"'"/g" skill.json
 done
 
 ask diff --target skill
