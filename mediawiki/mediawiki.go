@@ -96,7 +96,9 @@ func makeJsonRequest(url string, data interface{}, logger *zap.SugaredLogger) er
 	logger = logger.With("url", url)
 	logger.Debug("Before http Get")
 	startTime := time.Now()
-	r, e := http.Get(url)
+	request, _ := http.NewRequest(http.MethodGet, url, nil)
+	request.Header.Add("User-Agent", "Alexa_MyEncyclopedia_Bot/1.0 (https://github.com/petergtz/alexa-wikipedia/)")
+	r, e := http.DefaultClient.Do(request)
 	logger.Debugw("After http Get", "duration", time.Since(startTime).String())
 	if e != nil {
 		return errors.Wrapf(e, "Could not request url: \"%v\"", url)
